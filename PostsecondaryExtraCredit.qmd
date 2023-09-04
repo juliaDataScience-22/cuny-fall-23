@@ -1,0 +1,82 @@
+---
+title: "Postsecondary Education Students, Faculty, and Staff Research"
+format: html
+editor: visual
+---
+
+## Research Question
+
+The U.S. Department of Education collects information from public degree-granting postsecondary institutions from each of the fifty United States. In the fall semester of 2021, did the total full-time staff and the total full-time faculty in each state have any correlation with the total full-time students per full-time staff and the total full-time students per full-time faculty in each state, respectively?
+
+## Background
+
+The original data set was found on the website of the National Center for Education Statistics. The data set contained information about the full-time-equivalent (FTE) staff, FTE faculty, and ratios of FTE students to FTE staff and FTE faculty. The data used for this research was taken from a table that included only information about public degree-seeking postsecondary institutions. These institutions included two-year and four-year schools.
+
+The original table displaying information about full-time staff, faculty, and students contained extra information that was not required to answer the research question. As a result, all columns from the original table were removed except for the columns of the four variables required to answer the research question as well as the names of each state. The following code was used to create a gt table that displays the data used for this research project:
+
+```{r}
+library(gt) 
+library(readxl) 
+educationData <- read_excel("educationData.xlsx")  
+
+gt(educationData) |>   
+  tab_header(     
+    title = md("Full-time Staff, Faculty, and Student Data for Public Degree-Granting Postsecondary Institutions")
+    )
+```
+
+## Data Analysis
+
+Two scatterplots were created to determine if an obvious correlation was present.
+
+The first scatterplot relates the total staff to the ratio of students to staff.
+
+```{r}
+library(ggplot2)
+educationData <- read_excel("educationData.xlsx")  
+ggplot(data = educationData, aes(x = Total_FTE_Staff, y = Total_FTE_Students_Per_FTE_Staff)) + 
+  geom_point() +
+  xlab("Total Full-Time Equivalent Staff") +
+  ylab("Total Full-Time Equivalent Students Per Staff Member")
+```
+
+The second scatterplot relates the faculty to the ratio of students to faculty.
+
+```{r}
+library(ggplot2)
+educationData <- read_excel("educationData.xlsx")  
+ggplot(data = educationData, aes(x = Total_FTE_Faculty, y = Total_FTE_Students_Per_FTE_Faculty)) + 
+  geom_point() +
+  xlab("Total Full-Time Equivalent Faculty") +
+  ylab("Total Full-Time Equivalent Students Per Faculty Member")
+```
+
+This correlation test determined if a correlation existed between the total full-time equivalent staff and the total full-time equivalent students per staff:
+
+```{r}
+cor.test(x = educationData$Total_FTE_Staff, y = educationData$Total_FTE_Students_Per_FTE_Staff)
+```
+
+This correlation test determined if a correlation existed between the total full-time equivalent faculty and the total full-time equivalent students per faculty:
+
+```{r}
+cor.test(x = educationData$Total_FTE_Faculty, y = educationData$Total_FTE_Students_Per_FTE_Faculty)
+```
+
+The scatterplots showed a weak correlation. As the total faculty increased in each state, the total students per faculty appeared to increase. As the total staff increased in each state, the total students per staff appeared to increase. However, these correlations were not strong. When the total faculty or total staff were lower, the relationship was the weakest. When the total faculty or total staff were higher, the relationship was the strongest. For example, most of the data points on the scatterplots appeared on the left side of the graphs where the total staff or faculty was low. Most of them appeared random without indicating any signification correlation. When looking on the right side of the graphs where the total faculty or staff were higher, the ratios of students per faculty or students per staff were always high.
+
+To further determine the correlations, Pearson's correlation tests were conducted on the data. The correlation between faculty and students per faculty was 0.346593. This low value indicates a weak relationship. The correlation between staff and students per staff was 0.3285816. This low value also indicates a weak relationship.
+
+## Conclusions
+
+The scatterplots showed similar results for data involving staff and faculty. These scatterplots demonstrated a weak relationship between the variables that were correlated. These weak relationships were further demonstrated with the low correlation values for both situations. Based on the results, the total full-time staff and the total full-time faculty in each state did not have any significant correlation with the total full-time students per full-time staff and the total full-time students per full-time faculty in each state.
+
+## Future Research
+
+In the future, more statistical tests could be performed on states with the highest total staff and faculty. This research might show stronger correlations based on the findings of this study.
+
+## Sources
+
+"Full-time-equivalent (FTE) staff, FTE faculty, and ratios of FTE students to FTE staff and FTE faculty in public degree-granting postsecondary institutions, by level of institution and state or jurisdiction: Fall 2021." U.S. Department of Education, National Center for Education Statistics, Integrated Postsecondary Education Data System (IPEDS). Spring 2022, Human Resources component, Fall Staff section. Spring 2022, Fall Enrollment component. https://nces.ed.gov/programs/digest/d22/tables/dt22_314.50.asp. Accessed 3 Sept. 2023.
+
+\"Introduction to Creating Gt Tables.\" *gt*, https:// gt.rstudio.com/articles/intro-creating-gt-tables.html. Accessed 3 Sept. 2023.
