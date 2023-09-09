@@ -1,0 +1,164 @@
+---
+title: "Statistics vs. Bob Ross Paintings"
+author: "Julia Ferris"
+subtitle: "September 9, 2023"
+format: html
+editor: visual
+---
+
+## Introduction
+
+The data set included in this document displays information about the work of Bob Ross. The article titled "A Statistical Analysis of the Work of Bob Ross" describes the data analysis and interview conducted by the author, Walt Hickey. In the article, Hickey stated that Bob Ross's paintings were generally consistent, simple, and focused on nature.
+
+During Hickey's analysis of the data, he determined the probabilities of different elements of the paintings, such as trees and lakes, and he determined joint probabilities of some of these elements of the paintings. Based on his analysis of Ross's paintings, it is clear that most paintings included at least one tree, and few of his paintings included bridges, cliffs, palm trees, or flowers. His analysis answered many questions. For example, he asked and answered the following questions:
+
+-   What is the probability, given that Ross painted a "happy" tree, that he then painted a "friend" for that tree?
+
+-   What percentage of paintings that contained mountains contained mountains covered with snow?
+
+-   How often did Ross paint water?
+
+To find the answers to these questions and many others regarding Ross's paintings, visit Hickey's article at the following website: https://fivethirtyeight.com/features/a-statistical-analysis-of-the-work-of-bob-ross/
+
+## Data
+
+The entire data set will be loaded into the data frame named paintingData in the section below. To see the entire table describing Bob Ross's 403 paintings, visit the Git Hub website: https://github.com/fivethirtyeight/data/tree/master/bob-ross
+
+Smaller portions of the table will appear during the statistical analysis of this document. These smaller portions will only show the top rows, or the head, of the tables to save space.
+
+```{r load data}
+paintingData <- read.csv("https://raw.githubusercontent.com/juliaDataScience-22/cuny-fall-23/manage-acquire-data/elements-by-episode.csv")
+```
+
+The paintingData data frame created in the code above contains two columns to identify each painting and 67 variables to describe each painting. The first identifying variable will be removed in the code below, and only the top 10 variables will remain for the rest of this document. These 10 variables appear in the data frame named officialDF.
+
+```{r}
+list1 <- c()
+for (i in 3:ncol(paintingData)) {
+  list1 <- c(list1, length(which(paintingData[,i] == 1)))
+}
+
+toKeep <- c(sort(list1, decreasing = TRUE, index.return = TRUE))
+
+list2 <- c()
+for (i in 1:10) {
+  list2 <- c(list2, toKeep$ix[i])
+}
+
+columnNames <- c()
+
+officialDF <- paintingData[,2]
+paintingData <- paintingData[,-1]
+paintingData <- paintingData[,-1]
+
+for (i in 1:10) {
+  value <- list2[i]
+  columnNames <- c(columnNames, colnames(paintingData)[[value]])
+  officialDF <- cbind(officialDF, paintingData[,value])
+}
+
+colnames(officialDF) <- c("Title", c(columnNames))
+
+officialDF <- as.data.frame(officialDF)
+```
+
+## Statistical Analysis
+
+Walt Hickey did not show the code that he used to perform the statistical analysis on the paintings data in his article. To demonstrate a few examples similar to his statistical analysis, view the three questions below along with their code and answers. The statistical questions only relate to the subset of data in the data frame named officialDF.
+
+Question 1: What percentage of paintings with mountains contained at least one tree?
+
+-   To answer this question, a portion of the data will be used. This portion will only contain paintings that had mountains in them.
+
+-   Two variables in the data set are related to trees. The column named TREE shows the value 1 for paintings that contained at least one tree. The column named TREES shows the value 1 for paintings that contained more than one tree. Therefore, this question only relates to the columns TREE and MOUNTAIN.
+
+    ```{r}
+    mountain <- length(which(officialDF[,7] == 1))
+
+    subsetOfficial <- officialDF[officialDF$MOUNTAIN == 1,]
+    tree <- length(which(subsetOfficial[,2] == 1))
+
+    answer1 <- tree / mountain * 100
+    answer1
+
+    library(gt)
+    gt(head(subsetOfficial)) |> 
+      tab_header(     
+        title = "Table 1",
+        subtitle = "Elements in Bob Ross Paintings that Contained One Tree or More"
+        )
+    ```
+
+-   Answer 1: 97.5 %
+
+Question 2: What other popular feature was present most often when a river was in a painting?
+
+-   To answer this question, a portion of the data will be used. This portion will only contain paintings that had a river in them.
+
+    ```{r}
+    river <- length(which(officialDF[,10] == 1))
+
+    subsetOfficial <- officialDF[officialDF$RIVER == 1,]
+    tree <- length(which(subsetOfficial[,2] == 1))
+    trees <- length(which(subsetOfficial[,3] == 1))
+    deciduous <- length(which(subsetOfficial[,4] == 1))
+    conifer <- length(which(subsetOfficial[,5] == 1))
+    clouds <- length(which(subsetOfficial[,6] == 1))
+    mountain <- length(which(subsetOfficial[,7] == 1))
+    lake <- length(which(subsetOfficial[,8] == 1))
+    grass <- length(which(subsetOfficial[,9] == 1))
+    bushes <- length(which(subsetOfficial[,11] == 1))
+    newData <- data.frame(vars = c("tree", "trees", "deciduous", 
+                                   "conifer", "clouds", "mountain", 
+                                   "lake", "grass", "bushes"), 
+                          numbers = c(tree, trees, deciduous, conifer, clouds, 
+                                      mountain, lake, grass, bushes)
+                          )
+    mostInPainting <- which.max(newData$numbers)
+    answer2 <- newData$vars[[mostInPainting]]
+    answer2
+
+    gt(head(subsetOfficial)) |>   
+      tab_header(     
+        title = "Table 2",
+        subtitle = "Elements in Bob Ross Paintings that Contained Rivers"
+        )
+    ```
+
+-   Answer 2: The element tree was present most often when a river was present.
+
+Question 3: What percentage of paintings that contained clouds also contained grass?
+
+-   To answer this question, a portion of the data will be used. This portion will only contain paintings that had clouds in them.
+
+    ```{r}
+    clouds <- length(which(officialDF[,6] == 1))
+
+    subsetOfficial <- officialDF[officialDF$CLOUDS == 1,]
+    grass <- length(which(subsetOfficial[,9] == 1))
+
+    answer3 <- grass / clouds * 100
+    answer3
+
+    gt(head(subsetOfficial)) |>   
+      tab_header(     
+        title = "Table 3",
+        subtitle = "Elements in Bob Ross Paintings that Contained Clouds"
+        )
+    ```
+
+-   Answer 3: 31.84358%
+
+## Findings and Recommendations
+
+Some of the work demonstrated in this document extended the work from Walt Hickey's article. Similar to the article, the statistical analysis section in this document showed the steps to answer a few statistical questions. In the future, all the statistical tests performed in the article could be duplicated in R to verify the results presented by Hickey.
+
+Furthermore, data could be collected on the colors used in the paintings. Data could also be collected on the number of views for each episode. The elements in each painting, and possibly the colors used, could be analyzed to determine if any of them correlate to the number of views. Then, that information could be used to predict the style and content of paintings that would appeal to the most people.
+
+## Sources
+
+jooncodes, Bob Ross, (2017), GitHub repository, https://github.com/fivethirtyeight/data/tree/master/bob-ross
+
+Hickey, Walt. "A Statistical Analysis of the Work of Bob Ross." *FiveThirtyEight*, FiveThirtyEight, 14 Apr. 2014, https://fivethirtyeight.com/features/a-statistical-analysis-of-the-work-of-bob-ross/
+
+Statistics Globe, "Conditionally Remove Row from Data Frame in R (3 Examples) \| How to Delete Rows." https://statisticsglobe.com/r-remove-row-from-data-frame-condition
