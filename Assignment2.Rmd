@@ -1,0 +1,128 @@
+---
+title: "Assignment 2 - Movie Data"
+author: "Julia Ferris"
+date: "2023-09-13"
+output: slidy_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Importing Data
+The data loaded for this document comes from the MySQL .CSV file saved after running the MySQL script.
+
+
+```{r Movie data}
+library(readr)
+movies <- read_csv("C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/movieFile1.csv", show_col_types = FALSE)
+```
+
+## Replacing NA Values
+Some of the people included in the data set did not see the movies in the list. This missing data will be replaced in the section below by the average rating for the movie corresponding to the missing data entry. Table 1 shows the new values.
+
+```{r Replacement, Replace NA}
+movie1 <- c(movies$AvatarWater)
+movie1 <- suppressWarnings(as.numeric(movie1, na.rm = TRUE))
+movies$AvatarWater[movies$AvatarWater == "\\N"] <- round(mean(movie1, na.rm = TRUE))
+
+movie2 <- c(movies$TopGunMaverick)
+movie2 <- suppressWarnings(as.numeric(movie2, na.rm = TRUE))
+movies$TopGunMaverick[movies$TopGunMaverick == "\\N"] <- round(mean(movie2, na.rm = TRUE))
+
+movie3 <- c(movies$Oppenheimer)
+movie3 <- suppressWarnings(as.numeric(movie3, na.rm = TRUE))
+movies$Oppenheimer[movies$Oppenheimer == "\\N"] <- round(mean(movie3, na.rm = TRUE))
+
+movie4 <- c(movies$SoundOfFreedom)
+movie4 <- suppressWarnings(as.numeric(movie4, na.rm = TRUE))
+movies$SoundOfFreedom[movies$SoundOfFreedom == "\\N"] <- round(mean(movie4, na.rm = TRUE))
+
+movie5 <- c(movies$Barbie)
+movie5 <- suppressWarnings(as.numeric(movie5, na.rm = TRUE))
+movies$Barbie[movies$Barbie == "\\N"] <- round(mean(movie5, na.rm = TRUE))
+
+movie6 <- c(movies$Boogeyman)
+movie6 <- suppressWarnings(as.numeric(movie6, na.rm = TRUE))
+movies$Boogeyman[movies$Boogeyman == "\\N"] <- round(mean(movie6, na.rm = TRUE))
+
+library(gt)
+gt(head(movies)) |>   
+  tab_header(     
+    title = "Table 1",
+    subtitle = "Movie Ratings"
+    )
+```
+
+## Research Questions
+1. Which movie had the highest average rating?
+2. Were movie ratings more consistent by person or by movie?
+3. What percentage of ratings were greater than 3?
+
+## 1: Which movie had the highest average rating?
+To answer this question, the average rating for each movie was calculated. The average was based on the actual data plus the filled-in values.
+
+```{r Highest rating}
+one <- mean(as.numeric(movies$AvatarWater))
+two <- mean(as.numeric(movies$TopGunMaverick))
+three <- mean(as.numeric(movies$Oppenheimer))
+four <- mean(as.numeric(movies$SoundOfFreedom))
+five <- mean(as.numeric(movies$Barbie))
+six <- mean(as.numeric(movies$Boogeyman))
+
+newdf <- data.frame(Avatar = one, TopGun = two, Opp = three, Sound = four, Barbie = five, Boogey = six)
+newdf
+max(newdf)
+
+```
+## Answer 1: 
+ Sound of Freedom had the highest average rating.
+
+## 2: Were movie ratings more consistent by movie or by person?
+To answer this question, bar graphs were created for each person. Then, bar graphs were created for each movie. The bar graphs were used for visual comparison. The standard deviation was calculated for each person and for each movie for numerical comparison.
+
+```{r Consistency Part 1, fig.show="hold", out.width="33%"}
+barplot(as.numeric(movies$AvatarWater),xlab = "Person",ylab = "Rating",main = "Avatar: The Way of Water Ratings",names.arg = c(1, 2, 3, 4, 5), col="blue")
+barplot(as.numeric(movies$TopGunMaverick),xlab = "Person",ylab = "Rating",main = "Top Gun: Maverick Ratings",names.arg = c(1, 2, 3, 4, 5), col="blue")
+barplot(as.numeric(movies$Oppenheimer),xlab = "Person",ylab = "Rating",main = "Oppenheimer Ratings",names.arg = c(1, 2, 3, 4, 5), col="blue")
+barplot(as.numeric(movies$SoundOfFreedom),xlab = "Person",ylab = "Rating",main = "Sound of Freedom Ratings",names.arg = c(1, 2, 3, 4, 5), col="blue")
+barplot(as.numeric(movies$Barbie),xlab = "Person",ylab = "Rating",main = "Barbie Ratings",names.arg = c(1, 2, 3, 4, 5), col="blue")
+barplot(as.numeric(movies$Boogeyman),xlab = "Person",ylab = "Rating",main = "Boogeyman Ratings",names.arg = c(1, 2, 3, 4, 5), col="blue")
+
+```
+
+```{r Consistency Part 2, fig.show="hold", out.width="33%"}
+barplot(as.numeric(movies[1,2:7]),xlab = "Movie",ylab = "Rating",main = "Person 1 Ratings", names.arg = c("Avatar", "TopGun", "Opp", "Sound", "Barbie", "Boogey"),col="blue")
+barplot(as.numeric(movies[2,2:7]),xlab = "Movie",ylab = "Rating",main = "Person 2 Ratings", names.arg = c("Avatar", "TopGun", "Opp", "Sound", "Barbie", "Boogey"),col="blue")
+barplot(as.numeric(movies[3,2:7]),xlab = "Movie",ylab = "Rating",main = "Person 3 Ratings", names.arg = c("Avatar", "TopGun", "Opp", "Sound", "Barbie", "Boogey"),col="blue")
+barplot(as.numeric(movies[4,2:7]),xlab = "Movie",ylab = "Rating",main = "Person 4 Ratings", names.arg = c("Avatar", "TopGun", "Opp", "Sound", "Barbie", "Boogey"),col="blue")
+barplot(as.numeric(movies[5,2:7]),xlab = "Movie",ylab = "Rating",main = "Person 5 Ratings", names.arg = c("Avatar", "TopGun", "Opp", "Sound", "Barbie", "Boogey"),col="blue")
+```
+
+```{r Consistency Standard Deviations}
+mean(c(sd(as.numeric(movies$AvatarWater)), sd(as.numeric(movies$TopGunMaverick)), sd(as.numeric(movies$Oppenheimer)), sd(as.numeric(movies$SoundOfFreedom)), sd(as.numeric(movies$Barbie)), sd(as.numeric(movies$Boogeyman))))
+
+mean(c(sd(as.numeric(movies[1,2:7])), sd(as.numeric(movies[2,2:7])), sd(as.numeric(movies[3,2:7])),
+sd(as.numeric(movies[4,2:7])), sd(as.numeric(movies[5,2:7]))))
+```
+
+## Answer 2: 
+ Based on the visual comparison and the lowest average standard deviation, movie ratings were more consistent by movie than by person. This means most people voted similarly for the same movie. Also, this means most people voted differently when voting for different movies. However, the sample size of five people was small, so this is not representative of a larger population of people who watched these movies.
+
+## 3: What percentage of ratings were greater than 3?
+To answer this question, the number of ratings that were 4 or 5 were counted. This number was divided by the total number of ratings and multiplied by 100.
+
+```{r Percentage}
+(sum(movies == 4) + sum(movies == 5)) / sum(movies > 0) * 100
+
+```
+## Answer 3: 
+ 71.42857% of ratings were greater than 3.
+
+## Sources
+1. Wagner, Donald. Stack Overflow. 2016. https://stackoverflow.com/questions/5941809/include-headers-when-using-select-into-outfile
+
+2. Naveen. Spark By Examples. 2023. https://sparkbyexamples.com/r-programming/replace-values-in-r/
+
+3. Xie, Yihui. Dervieux, Christophe. Riederer, Emily. R Markdown Cookbook. Bookdown. 2023. https://bookdown.org/yihui/rmarkdown-cookbook/figures-side.html
+
