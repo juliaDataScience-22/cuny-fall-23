@@ -1,0 +1,239 @@
+---
+title: "Extra Credit - DATA 607"
+author: "Julia Ferris"
+date: "2023-09-18"
+output:  slidy_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Step 1: Load the packages needed.
+
+Two packages are needed. readr is used to import the data. gt is used to format the data nicely.
+
+```{r load-libraries}
+library(readr)
+library(gt)
+```
+
+## Step 2: Import the data.
+
+```{r load-data}
+movies <- read_csv("https://raw.githubusercontent.com/juliaDataScience-22/cuny-fall-23/manage-acquire-data/newMovieRatings.csv", 
+                   show_col_types = FALSE)
+gt(movies) |>   
+  tab_header(     
+    title = "Table 1",
+    subtitle = "Movie Ratings"
+    )
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r create-needed-dataframes}
+movieAvgs <- data.frame(movie = c("AvatarWater","TopGunMaverick",
+                                  "Oppenheimer","SoundOfFreedom",
+                                  "Barbie","Boogeyman"),
+                        average = c(mean(movies$AvatarWater, na.rm = TRUE),
+                                    mean(movies$TopGunMaverick, na.rm = TRUE),
+                                    mean(movies$Oppenheimer, na.rm = TRUE),
+                                    mean(movies$SoundOfFreedom, na.rm = TRUE),
+                                    mean(movies$Barbie, na.rm = TRUE),
+                                    mean(movies$Boogeyman, na.rm = TRUE)))
+userAvgs <- data.frame(user = c("Jan","Jill","Claire","Dan","Sean"),
+                       average = c(mean(c(movies$AvatarWater[1],
+                                      movies$TopGunMaverick[1],
+                                      movies$Oppenheimer[1],
+                                      movies$SoundOfFreedom[1],
+                                      movies$Barbie[1],
+                                      movies$Boogeyman[1]),
+                                     na.rm = TRUE),
+                                   mean(c(movies$AvatarWater[2],
+                                      movies$TopGunMaverick[2],
+                                      movies$Oppenheimer[2],
+                                      movies$SoundOfFreedom[2],
+                                      movies$Barbie[2],
+                                      movies$Boogeyman[2]),
+                                     na.rm = TRUE),
+                                   mean(c(movies$AvatarWater[3],
+                                          movies$TopGunMaverick[3],
+                                          movies$Oppenheimer[3],
+                                          movies$SoundOfFreedom[3],
+                                          movies$Barbie[3],
+                                          movies$Boogeyman[3]),
+                                        na.rm = TRUE),
+                                   mean(c(movies$AvatarWater[4],
+                                          movies$TopGunMaverick[4],
+                                          movies$Oppenheimer[4],
+                                          movies$SoundOfFreedom[4],
+                                          movies$Barbie[4],
+                                          movies$Boogeyman[4]),
+                                        na.rm = TRUE),
+                                   mean(c(movies$AvatarWater[5],
+                                          movies$TopGunMaverick[5],
+                                          movies$Oppenheimer[5],
+                                          movies$SoundOfFreedom[5],
+                                          movies$Barbie[5],
+                                          movies$Boogeyman[5]),
+                                        na.rm = TRUE)))
+meanMovieRating <- sum(c(movies$AvatarWater, 
+                         movies$TopGunMaverick, 
+                         movies$Oppenheimer, 
+                         movies$SoundOfFreedom, 
+                         movies$Barbie, 
+                         movies$Boogeyman),na.rm=TRUE) / sum(!is.na(movies[2:7]))
+movieAvgs$movieAvgMinusMeanMovie <- c(movieAvgs$average[1] - meanMovieRating,
+                                      movieAvgs$average[2] - meanMovieRating,
+                                      movieAvgs$average[3] - meanMovieRating,
+                                      movieAvgs$average[4] - meanMovieRating,
+                                      movieAvgs$average[5] - meanMovieRating,
+                                      movieAvgs$average[6] - meanMovieRating)
+userAvgs$userAvgMinusMeanMovie <- c(userAvgs$average[1] - meanMovieRating,
+                                    userAvgs$average[2] - meanMovieRating,
+                                    userAvgs$average[3] - meanMovieRating,
+                                    userAvgs$average[4] - meanMovieRating,
+                                    userAvgs$average[5] - meanMovieRating)
+
+gt(movieAvgs) |>   
+  tab_header(     
+    title = "Table 2",
+    subtitle = "Movie Averages"
+    )
+gt(userAvgs) |>   
+  tab_header(     
+    title = "Table 3",
+    subtitle = "User Averages"
+    )
+```
+
+## Step 3: Write the function.
+
+The function can accomplish two things. The first is to rate a movie that a person has not seen. The second is to recommend a movie of the ones a person has not seen. The function is based on the algorithm known as the Global Baseline Estimate.
+
+Please note: This algorithm will only work with the data set used. If another data set it used, it will not work. However, this function can be modified for other data sets. Also, if multiple movies tie for the same rating, only one of them will be recommended to the person. Lastly, error checking is not included in the function because the function is tested with pre-determined input.
+
+```{r function}
+ratingAlgorithm <- function(name, determine) {
+  if(determine == "rate")
+  {
+    personName <- name
+    personName <- switch(personName,
+           "Jan"="1",
+           "Jill"="2",
+           "Claire"="3",
+           "Dan"="4",
+           "Sean"="5",
+           "other")
+    personName <- suppressWarnings(as.numeric(personName))
+    movieTitle <- 0
+    ifelse(is.na(movies$AvatarWater[personName]), movieTitle <- 1, movieTitle <- movieTitle)
+    ifelse(is.na(movies$TopGunMaverick[personName]), movieTitle <- 2, movieTitle <- movieTitle)
+    ifelse(is.na(movies$Oppenheimer[personName]), movieTitle <- 3, movieTitle <- movieTitle)
+    ifelse(is.na(movies$SoundOfFreedom[personName]), movieTitle <- 4, movieTitle <- movieTitle)
+    ifelse(is.na(movies$Barbie[personName]), movieTitle <- 5, movieTitle <- movieTitle)
+    ifelse(is.na(movies$Boogeyman[personName]), movieTitle <- 6, movieTitle <- movieTitle)
+    
+    movieName <- as.character(movieTitle)
+    movieName <- switch(movieName,
+           "1"="Avatar: The Way of Water",
+           "2"="Top Gun: Maverick",
+           "3"="Oppenheimer",
+           "4"="Sound of Freedom",
+           "5"="Barbie",
+           "6"="The Boogeyman",
+           "other")
+    
+    rating <- meanMovieRating + 
+      movieAvgs$movieAvgMinusMeanMovie[movieTitle] + 
+      userAvgs$userAvgMinusMeanMovie[personName]
+    
+    paste(name, "would give", movieName, "a rating of", round(rating, digits = 2))
+  }else if(determine == "recommend")
+  {
+    personName <- name
+    personName <- switch(personName,
+           "Jan"="1",
+           "Jill"="2",
+           "Claire"="3",
+           "Dan"="4",
+           "Sean"="5",
+           "other")
+    personName <- suppressWarnings(as.numeric(personName))
+
+    check1 <- 0
+    check2 <- 0
+    check3 <- 0
+    check4 <- 0
+    check5 <- 0
+    check6 <- 0
+    
+    ifelse(is.na(movies$AvatarWater[personName]), check1 <- 1, check1 <- 0)
+    ifelse(is.na(movies$TopGunMaverick[personName]), check2 <- 2, check2 <- 0)
+    ifelse(is.na(movies$Oppenheimer[personName]), check3 <- 3, check3 <- 0)
+    ifelse(is.na(movies$SoundOfFreedom[personName]), check4 <- 4, check4 <- 0)
+    ifelse(is.na(movies$Barbie[personName]), check5 <- 5, check5 <- 0)
+    ifelse(is.na(movies$Boogeyman[personName]), check6 <- 6, check6 <- 0)
+    
+    checks <- c(check1, check2, check3, check4, check5, check6)
+    ratings <- c()
+    movieNames <- c()
+    for (check in checks){
+      if(check != 0)
+      {
+        movieTitle <- check
+        rating <- meanMovieRating + 
+          movieAvgs$movieAvgMinusMeanMovie[movieTitle] + 
+          userAvgs$userAvgMinusMeanMovie[personName]
+        movieName <- as.character(movieTitle)
+        movieName <- switch(movieName,
+               "1"="Avatar: The Way of Water",
+               "2"="Top Gun: Maverick",
+               "3"="Oppenheimer",
+               "4"="Sound of Freedom",
+               "5"="Barbie",
+               "6"="The Boogeyman",
+               "other")
+        ratings <- c(ratings, rating)
+        movieNames <- c(movieNames, movieName)
+      }
+    }
+    compareMovies <- data.frame(movieRatings = c(ratings),
+                                theMovieNames = c(movieNames))
+    bestMovie1 <- max(compareMovies$movieRatings,is.na = TRUE)
+    count = 1
+    bestMovie2 <- 0
+    for (rating in compareMovies$movieRatings)
+    {
+      if(rating == bestMovie1)
+      {
+        bestMovie2 <- compareMovies$theMovieNames[count]
+        break
+      }
+      count <- count + 1
+    }
+    paste(name, "should watch", bestMovie2)
+  }
+}
+```
+
+## Step 4: Testing the function.
+
+Each person had missing values. People who missed two or more movies will be given a recommendation. People who only missed on movie will have a rating created for the one they missed.
+
+```{r use-function}
+ratingAlgorithm("Jan", "recommend")
+ratingAlgorithm("Jill", "rate")
+ratingAlgorithm("Claire", "recommend")
+ratingAlgorithm("Dan", "rate")
+ratingAlgorithm("Sean", "recommend")
+```
+
+## Step 5: Extensions of this algorithm.
+
+Here are a few ways to add to this information:
+
+1.  Rewrite the algorithm to allow any size of data in the same format.
+2.  Rewrite the algorithm with error-checking.
+3.  Create a function for a recommender system with a different algorithm.
