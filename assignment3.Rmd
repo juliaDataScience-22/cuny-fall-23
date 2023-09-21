@@ -1,0 +1,141 @@
+---
+title: "Assignment-3"
+author: "Julia Ferris"
+date: "2023-09-21"
+output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+## Introduction
+
+In this document, the four parts of Assignment 3 will be answered with code as the answer or as examples.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Part 1: Identify the majors that contain DATA or STATISTICS.
+
+In this section, the readr package is used to import data from a CSV file that is located in a Git Hub repository. Then, majors with DATA or STATISTICS are filtered out of the original data frame.
+
+```{r part-1}
+#Import data
+library(readr)
+library(stringr)
+library(gt)
+majors <- read_csv("https://raw.githubusercontent.com/juliaDataScience-22/cuny-fall-23/manage-acquire-data/majors-list.csv")
+
+gt(head(majors)) |>   
+  tab_header(     
+    title = "Table 1",
+    subtitle = "All Majors"
+    )
+
+#Filter out majors with DATA
+dataMajors <- majors[str_detect(majors$Major, "DATA"),]
+
+#Filter out majors with STATISTICS
+statisticsMajors <- majors[str_detect(majors$Major, "STATISTICS"),]
+
+newMajors <- rbind(dataMajors, statisticsMajors)
+
+#Print information about all majors containing DATA or STATISTICS
+gt(head(newMajors)) |>   
+  tab_header(     
+    title = "Table 2",
+    subtitle = "Majors Containing DATA or STATISTICS"
+    )
+
+```
+
+## Part 2: Transform the data into a new form.
+
+Next, the list of items in foodItems needs to be transformed into the format it was used to create the list.
+
+```{r part-2}
+foodItems <- c("bell pepper", "bilberry", "blackberry", "blood orange", "blueberry", "cantaloupe", "chili pepper", "cloudberry", "elderberry", "lime", "lychee", "mulberry", "olive", "salal berry")
+
+noquote(paste0("c(",'"',foodItems[1],'"',", ",'"',foodItems[2],'"',', ','"',foodItems[3],'"',', ','"',foodItems[4],'"',', ','"',foodItems[5],'"',', ','"',foodItems[6],'"',', ','"',foodItems[7],'"',', ','"',foodItems[8],'"',', ','"',foodItems[9],'"',', ','"',foodItems[10],'"',', ','"',foodItems[11],'"',', ','"',foodItems[12],'"',', ','"',foodItems[13],'"',', ','"',foodItems[14],'"',')'))
+
+```
+
+## Part 3: Describe what the expressions will match.
+
+(a) (.)\\1\\1
+
+    This expression will match with all words that contain a triple
+    letter. For example, "treee" will match because of the triple E,
+    while "reference" will not match because not all the E's are next to
+    each other.
+
+(b) "(.)(.)\\2\\1"
+
+    This expression will match with all words that contain the following
+    pattern: abba. The first symbol must be repeated as the fourth
+    symbol. The middle two symbols must match each other. For example,
+    "sees" will match, but "keep" will not.
+
+(c) (..)\\1
+
+    This expression will match with all words that contain a repeated
+    pattern of two symbols. It will match with the following pattern:
+    abab. For example, "banana" will match because it contains anan,
+    while "decide" will not match because de and de do not repeat next
+    to each other.
+
+(d) "(.).\\1.\\1"
+
+    This expression will match with all words that contain the same
+    symbol three times as every other symbol. The pattern is abaca where
+    b and c can be anything. For example, "caravan" will match because
+    of the arava part, while "greeter" will not match because the three
+    E's are not every other letter.
+
+(e) "(.)(.)(.).\*\\3\\2\\1"
+
+    This expression will match with all words in the following pattern:
+    abcdecba. The first three symbols of the pattern must be the last
+    three symbols in reverse order. The middle two symbols can be
+    anything. For example, "snellens" and "acegheca" will match, while
+    "grilling" and "automation" will not match.
+
+All examples are provided in the code below:
+
+```{r pressure}
+words <- c("one","book","treee","banana","hello","sees","decide","snellens","abcdecba","tacos","sweetest","cucumber")
+
+str_view(words, "(.)\\1\\1")
+str_view(words, "(.)(.)\\2\\1")
+str_view(words, "(..)\\1")
+str_view(words, "(.).\\1.\\1")
+str_view(words, "(.)(.)(.).*\\3\\2\\1")
+```
+
+## Part 4: Match words for the three situations.
+
+(a) Start and end with the same character
+
+    "\^(.).\*\\\\1\$"
+
+(b) Contain a repeated pair of letters (together, like ab ab)
+
+    "([a-z]\|[A-Z])(a-z]\|[A-Z]).\*?\\\\1\\\\2"
+
+(c) Contain one letter repeated in at least three places
+
+    "([a-z]\|[A-Z]).*?\\\\1.*?\\\\1"
+
+Examples of each are provided in the following code:
+
+```{r part-4}
+str_view(words, "^(.).*?\\1$")
+str_view(words, "([a-z]|[A-Z])([a-z]|[A-Z]).*?\\1\\2")
+str_view(words, "([a-z]|[A-Z]).?\\1.?\\1")
+```
+## Sources
+
+1. Wickham, Hadley. Çetinkaya-Rundel, Mine. Grolemund, Garrett. R for Data Science, 2nd Edition. 2023. https://r4ds.hadley.nz/
+
+2. Lander, Jared P. R for Everyone: Advanced Analytics and Graphics. Addison Wesley, 2017.
