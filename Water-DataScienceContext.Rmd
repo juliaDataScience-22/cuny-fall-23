@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r cars}
 library(readr)
 library(dplyr)
-fullWaterData <- read_csv("Water-Data-Sc-Context.csv")
+fullWaterData <- read_csv("https://raw.githubusercontent.com/juliaDataScience-22/cuny-fall-23/manage-acquire-data/Water-Data-Sc-Context.csv")
 fullWaterData$Country <- replace(fullWaterData$Country, fullWaterData$Country == "C\xf4te d'Ivoire", "Cote d'Ivoire")
 fullWaterData$Country <- replace(fullWaterData$Country, fullWaterData$Country == "T\xfcrkiye", "Turkiye")
 View(fullWaterData)
