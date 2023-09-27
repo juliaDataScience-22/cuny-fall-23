@@ -1,0 +1,135 @@
+---
+title: "Import Chess Data"
+author: "Julia Ferris"
+date: "2023-09-27"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+In this document, the text file containing information about players in a chess tournament is imported and then formatted a specific way. First, the text file is imported. After it is imported, it is formatted into a new data frame that contains all relevant columns. Once the new data frame is completed, it is then output as a csv file. Lastly, the data frame is displayed as a table.
+
+## Import Text File and Format Data
+
+In this section, the file is imported and then formatted into a new table
+
+
+```{r test1}
+test1 <- read.table(file = 'https://raw.githubusercontent.com/juliaDataScience-22/cuny-fall-23/manage-acquire-data/tournament-info.txt', fill = TRUE, header = FALSE, sep = " ", dec = "|")
+
+test1 <- test1[,-1]
+test1 <- test1[,-1]
+test1 <- test1[,-1]
+
+test1 <- test1[-149,]
+test1 <- test1[-156,]
+test1 <- test1[-163,]
+test1 <- test1[-164,]
+test1 <- test1[-167,]
+test1 <- test1[-170,]
+test1 <- test1[-173,]
+test1 <- test1[-176,]
+test1 <- test1[-179,]
+test1 <- test1[-182,]
+test1 <- test1[-185,]
+test1 <- test1[-190,]
+test1 <- test1[-191,]
+test1 <- test1[-194,]
+test1 <- test1[-136,]
+
+library(tidyr)
+test1 <- unite(test1, col = 'V9', c(V9, V10), sep="")
+
+test2 <- data.frame(Name = c(1:64), State = c(1:64), Total.Points = c(1:64), Pre.Rating = c(1:64), Avg.Pre.Rating.Opponents = c(1:64))
+
+test2$Pre.Rating <- test1$V9[c(seq(6,197,3))]
+
+library(stringr)
+test2[c('Pre.Rating', 'To.Delete')] <- str_split_fixed(test2$Pre.Rating, 'P', 2)
+
+test2 <- test2[,-6]
+
+test1 <- unite(test1, col = 'Names2', c(V6, V7, V8, V9), sep=" ")
+
+library(dplyr)
+test1 <- test1 %>% mutate(Names2 = str_replace_all(Names2, '\\|', ""))
+
+
+
+test2$Name <- test1$Names2[c(seq(5, 194, 3))]
+
+test2$State <- test1$V4[c(seq(6, 195, 3))]
+
+indices <- which(test1 == "|6.0" | test1 == "|5.5" | test1=="|5.0" | test1 == "|4.5" | test1 == "|4.0" | test1 == "|3.5" | test1 == "|3.0" | test1 == "|2.5" | test1 == "|2.0" | test1 == "|1.5" | test1 == "|1.0", arr.ind=TRUE)
+indices <- indices[order(indices[,1],decreasing=FALSE),]
+
+num <- 1
+for (i in 1:64)
+{
+  loc <- c(indices[[i]], indices[[i+64]])
+  test2$Total.Points[num] <- test1[loc[1],loc[2]]
+  num <- num + 1
+}
+
+test2[c('Total.Points', 'To Delete')] <- str_split_fixed(test2$Total.Points, "\\|", 2)
+test2$Total.Points <- test2$`To Delete`
+test2 <- test2[,-6]
+
+count <- 1
+for (i in seq(5, 194, 3))
+{
+  test4 <- test1[i,9:43]
+  test4 <- test4 |> mutate_all(na_if,"")
+  indices <- which(!is.na(test4), arr.ind=TRUE)
+  indices <- indices[-1,]
+  indices <- indices[-1,]
+  avgRatingOpp <- 0
+  players <- 0
+  for (num in 1:nrow(indices))
+  {
+      loc <- indices[[num + nrow(indices)]]
+      player1 <- str_split_fixed(test4[loc], "\\|", 2)[1]
+      if(player1 != "") 
+      {
+        value1 <- test2$Pre.Rating[as.numeric(player1)]
+        avgRatingOpp <- (as.numeric(value1) + avgRatingOpp)
+        players <- players + 1
+      }
+  }
+  test2$Avg.Pre.Rating.Opponents[count] <- round(avgRatingOpp / players)
+  count <- count + 1
+}
+
+write.csv(test2, "chessData.csv", row.names = FALSE)
+
+```
+
+## New Data Frame
+
+In this section, a table is created to display the results. To see the table as a csv file, locate the file named chessData.csv.
+
+``` {r}
+library(gt)
+gt(test2) |>   
+  tab_header(     
+    title = "Table 1",
+    subtitle = "Chess Tournament - Player Information"
+    )
+```
+
+## Sources (websites)
+
+1. https://tidyr.tidyverse.org/reference/unite.html
+2. https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/seq
+3. https://www.rdocumentation.org/packages/stringr/versions/0.6.2/topics/str_split_fixed
+4. https://www.rdocumentation.org/packages/stringr/versions/0.6.2/topics/str_replace_all
+5. https://www.geeksforgeeks.org/which-function-in-r/
+6. https://www.tutorialspoint.com/how-to-sort-a-matrix-based-on-one-column-in-r
+7. https://stackoverflow.com/questions/1169456/the-difference-between-bracket-and-double-bracket-for-accessing-the-el
+8. https://stackoverflow.com/questions/56829690/how-to-use-mutate-all-with-a-function-having-multiple-arguments
