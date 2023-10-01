@@ -1,0 +1,72 @@
+---
+title: "Assignment 5"
+author: "Julia Ferris"
+date: "2023-09-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This assignment uses a small data set containing the number of flights for two airlines that arrive on time or delayed. The data set is originally untidy, and it is then converted to a tidy data set. Then, the delays for both airlines are compared to determine which airline has fewer delays on average and total.
+
+## Pull in data from the .csv file
+
+The .csv file is a short data set that is not tidy. The airline names are not in every row they apply to, so their names are added where needed. The third line is empty, so that is removed.
+
+```{r get-data}
+library(readr)
+untidyDataAirlines <- read.csv("https://raw.githubusercontent.com/juliaDataScience-22/cuny-fall-23/manage-acquire-data/untidyAirlines.csv")
+untidyDataAirlines$X <- c("ALASKA", "ALASKA", NA, "AM WEST", "AM WEST")
+untidyDataAirlines <- untidyDataAirlines[-3,]
+```
+
+## Format the data
+
+In this section, the data is transformed into a tidy data set. First, the columns for each location are converted into only two columns: one for the location and one for the number of flights in each location. When that step happens, a column that states if the flights were on time or delayed is completed. After this transformation, the first two columns are renamed.
+
+```{r format-data}
+library(tidyr)
+untidyDataAirlines <- pivot_longer(untidyDataAirlines, 
+             cols = c("Los.Angeles", "Phoenix", "San.Diego", "San.Francisco", "Seattle"),
+             names_to = "location",
+             values_to = "number")
+library(dplyr)
+untidyDataAirlines <- rename(untidyDataAirlines, airline = X)
+untidyDataAirlines <- rename(untidyDataAirlines, type_of_delay = X.1)
+```
+
+## Compare the two airlines
+
+Based on the results, the airline AM WEST had a higher average number of delays and a larger total number of delays than the airline ALASKA. Therefore, I would make the claim that AM WEST was a better airline because of fewer airline delays across the locations on average and because of fewer airline delays total.
+
+``` {r comparison}
+alaska <- untidyDataAirlines |>
+  filter(airline == "ALASKA") |>
+  filter(type_of_delay == "delayed")
+alaskaMean <- mean(alaska$number)
+alaskaSum <- sum(alaska$number)
+
+amWest <- untidyDataAirlines |>
+  filter(airline == "AM WEST") |>
+  filter(type_of_delay == "delayed")
+amWestMean <- mean(amWest$number)
+amWestSum <- sum(amWest$number)
+
+paste("ALASKA delay mean:", alaskaMean)
+paste("AM WEST delay mean:", amWestMean)
+paste("ALASKA delay total:", alaskaSum)
+paste("AM WEST delay total:", amWestSum)
+```
+
+
+## Sources:
+
+1. Zach. (2022, March 23). How to use pivot_longer() in R. Statology. https://www.statology.org/pivot_longer-in-r/
+
+2. Rename columns. dplyr. (n.d.). https://dplyr.tidyverse.org/reference/rename.html 
+
+3. Wickham, H., Çetinkaya-Rundel, M., &amp; Grolemund, G. (2023). R for Data Science (2nd ed.). O’Reilly.
