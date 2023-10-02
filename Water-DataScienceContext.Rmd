@@ -1,20 +1,26 @@
 ---
 title: "Data Science in Context - Water"
 author: "Julia Ferris"
-date: "2023-09-25"
-output: slidy_presentation
-
+date: "2023-10-02"
+output:
+  beamer_presentation: default
+  slidy_presentation: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+## About this code:
+
+In my Data Science in Context presentation, I only used some of the graphs produced here. I also only included graphs with complete sets of data. Any missing values were not used. In the simplified data sets, E stood for estimated data, and I stood for imputed data.
+
 ## Data
 
 ```{r cars}
 library(readr)
 library(dplyr)
+library(ggplot2)
 fullWaterData <- read_csv("https://raw.githubusercontent.com/juliaDataScience-22/cuny-fall-23/manage-acquire-data/Water-Data-Sc-Context.csv")
 fullWaterData$Country <- replace(fullWaterData$Country, fullWaterData$Country == "C\xf4te d'Ivoire", "Cote d'Ivoire")
 fullWaterData$Country <- replace(fullWaterData$Country, fullWaterData$Country == "T\xfcrkiye", "Turkiye")
@@ -42,13 +48,18 @@ View(usWaterData)
 
 simplifiedUSWaterData <- simplifiedWaterData[1751:1760,]
 View(simplifiedUSWaterData)
+
+canadaWaterData <- simplifiedWaterData[301:310,]
+View(canadaWaterData)
+
+mexicoWaterData <- simplifiedWaterData[1071:1080,]
+View(mexicoWaterData)
 ```
 
 ## Visualize Trends
 
 
 ```{r pressure, fig.show="hold", out.width="50%"}
-library(ggplot2)
 ggplot(fullWaterData, aes(Year, `E - Agricultural water withdrawal as % of total renewable water resources`, color = Country)) +
   geom_point() + theme(legend.position = "none")
 arrange(fullWaterData[,c(1,2,3)], desc(`E - Agricultural water withdrawal as % of total renewable water resources`)) |> head(n = 30)
@@ -179,3 +190,115 @@ ggplot(simplifiedUSWaterData, aes(Year, Water.Stress, color = Country)) +
 
 ```
 
+``` {r all-data, fig.show="hold", out.width="50%"}
+ggplot() +
+  geom_point(data = canadaWaterData, mapping = aes(Year, `Agricultural.Water.Withdrawal`, color = Country)) +
+  geom_point(data = simplifiedUSWaterData, mapping = aes(Year, `Agricultural.Water.Withdrawal`, color = Country)) +
+  geom_point(data = mexicoWaterData, mapping = aes(Year, `Agricultural.Water.Withdrawal`, color = Country))
+
+ggplot() +
+  geom_point(data = canadaWaterData, mapping = aes(Year, `Industrial.Water.Use`, color = Country)) +
+  geom_point(data = simplifiedUSWaterData, mapping = aes(Year, `Industrial.Water.Use`, color = Country)) +
+  geom_point(data = mexicoWaterData, mapping = aes(Year, `Industrial.Water.Use`, color = Country))
+
+ggplot() +
+  geom_point(data = canadaWaterData, mapping = aes(Year, `Irrigated.Agriculture.Water.Use`, color = Country)) +
+  geom_point(data = simplifiedUSWaterData, mapping = aes(Year, `Irrigated.Agriculture.Water.Use`, color = Country)) +
+  geom_point(data = mexicoWaterData, mapping = aes(Year, `Irrigated.Agriculture.Water.Use`, color = Country))
+
+ggplot() +
+  geom_point(data = canadaWaterData, mapping = aes(Year, `Services.Water.Use`, color = Country)) +
+  geom_point(data = simplifiedUSWaterData, mapping = aes(Year, `Services.Water.Use`, color = Country)) +
+  geom_point(data = mexicoWaterData, mapping = aes(Year, `Services.Water.Use`, color = Country))
+
+ggplot() +
+  geom_point(data = canadaWaterData, mapping = aes(Year, `Water.Use`, color = Country)) +
+  geom_point(data = simplifiedUSWaterData, mapping = aes(Year, `Water.Use`, color = Country)) +
+  geom_point(data = mexicoWaterData, mapping = aes(Year, `Water.Use`, color = Country))
+
+ggplot() +
+  geom_point(data = canadaWaterData, mapping = aes(Year, `Water.Stress`, color = Country)) +
+  geom_point(data = simplifiedUSWaterData, mapping = aes(Year, `Water.Stress`, color = Country)) +
+  geom_point(data = mexicoWaterData, mapping = aes(Year, `Water.Stress`, color = Country))
+```
+
+```{r comparison, fig.show="hold", out.width="33%"}
+ggplot(canadaWaterData, aes(Year, `Agricultural.Water.Withdrawal`, color = Country)) +
+  geom_point(color = "blue") + geom_smooth(color = "blue") +
+  theme(legend.position = "none") +
+  labs(title = "Canada")
+ggplot(simplifiedUSWaterData, aes(Year, `Agricultural.Water.Withdrawal`, color = Country)) +
+  geom_point(color = "red") + geom_smooth(color = "red") + 
+  theme(legend.position = "none") +
+  labs(title = "U.S.")
+ggplot(mexicoWaterData, aes(Year, `Agricultural.Water.Withdrawal`, color = Country)) +
+  geom_point(color = "green") + geom_smooth(color = "green") + 
+  theme(legend.position = "none") +
+  labs(title = "Mexico")
+
+ggplot(canadaWaterData, aes(Year, Industrial.Water.Use, color = Country)) +
+  geom_point(color = "blue") + geom_smooth(color = "blue") + 
+  theme(legend.position = "none") +
+  labs(title = "Canada")
+ggplot(simplifiedUSWaterData, aes(Year, Industrial.Water.Use, color = Country)) +
+  geom_point(color = "red") + geom_smooth(color = "red") +
+  theme(legend.position = "none") +
+  labs(title = "U.S.")
+ggplot(mexicoWaterData, aes(Year, Industrial.Water.Use, color = Country)) +
+  geom_point(color = "green") + geom_smooth(color = "green") +
+  theme(legend.position = "none") +
+  labs(title = "Mexico")
+
+ggplot(canadaWaterData, aes(Year, Irrigated.Agriculture.Water.Use, color = Country)) +
+  geom_point(color = "blue") + geom_smooth(color = "blue") +
+  theme(legend.position = "none") +
+  labs(title = "Canada")
+ggplot(simplifiedUSWaterData, aes(Year, Irrigated.Agriculture.Water.Use, color = Country)) +
+  geom_point(color = "red") + geom_smooth(color = "red") +
+  theme(legend.position = "none") +
+  labs(title = "U.S.")
+ggplot(mexicoWaterData, aes(Year, Irrigated.Agriculture.Water.Use, color = Country)) +
+  geom_point(color = "green") + geom_smooth(color = "green") +
+  theme(legend.position = "none") +
+  labs(title = "Mexico")
+
+ggplot(canadaWaterData, aes(Year, Services.Water.Use, color = Country)) +
+  geom_point(color = "blue") + geom_smooth(color = "blue") +
+  theme(legend.position = "none") +
+  labs(title = "Canada")
+ggplot(simplifiedUSWaterData, aes(Year, Services.Water.Use, color = Country)) +
+  geom_point(color = "red") + geom_smooth(color = "red") +
+  theme(legend.position = "none") +
+  labs(title = "U.S.")
+ggplot(mexicoWaterData, aes(Year, Services.Water.Use, color = Country)) +
+  geom_point(color = "green") + geom_smooth(color = "green") +
+  theme(legend.position = "none") +
+  labs(title = "Mexico")
+
+ggplot(canadaWaterData, aes(Year, Water.Use, color = Country)) +
+  geom_point(color = "blue") + geom_smooth(color = "blue") +
+  theme(legend.position = "none") +
+  labs(title = "Canada")
+ggplot(simplifiedUSWaterData, aes(Year, Water.Use, color = Country)) +
+  geom_point(color = "red") + geom_smooth(color = "red") +
+  geom_smooth() + theme(legend.position = "none") +
+  labs(title = "U.S.")
+ggplot(mexicoWaterData, aes(Year, Water.Use, color = Country)) +
+  geom_point(color = "green") + geom_smooth(color = "green") +
+  theme(legend.position = "none") +
+  labs(title = "Mexico")
+
+ggplot(canadaWaterData, aes(Year, Water.Stress, color = Country)) +
+  geom_point(color = "blue") + geom_smooth(color = "blue") +
+  theme(legend.position = "none") +
+  labs(title = "Canada")
+ggplot(simplifiedUSWaterData, aes(Year, Water.Stress, color = Country)) +
+  geom_point(color = "red") + geom_smooth(color = "red") +
+  theme(legend.position = "none") +
+  labs(title = "U.S.")
+ggplot(mexicoWaterData, aes(Year, Water.Stress, color = Country)) +
+  geom_point(color = "green") + geom_smooth(color = "green") +
+  theme(legend.position = "none") +
+  labs(title = "Mexico")
+
+```
