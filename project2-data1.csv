@@ -1,0 +1,99 @@
+EMERGENCY DEPARTMENT (ED) UTILIZATION TRENDS 2013-2017,,,,,,,,,,
+(Excludes State Hospitals and Non-Responders),,,,,,,,,,
+PIVOT SELECTIONS   (Individual hospital information will appear only if one hospital is selected*),,,,,,,,,,
+Count of Hospitals,415,,,,,,,,,
+Hospital Name,(All),,,,,,,,,
+Hospital County,(All),,,,Assembly District,,(All),,,
+EMSA County,(All),,,,Senate District,,(All),,,
+Type of Control,(All),,,,Congressional District,,(All),,,
+Principal Service,(All),,,,Los Angeles SPA,,(All),,,
+Trauma Center Designation,(All),,,,MSSA,,(All),,,
+ED Level,(All),,,,OSHPD ID,,(All),,,
+,,,,,,,,,,
+* Individual hospital information is based on 2013 data.,,,,,,,,,,
+Emergency Departments,2013,,2014,,2015,,2016,,2017,
+,Number,Percent,Number,Percent,Number,Percent,Number,Percent,Number,Percent
+ GAC Hospitals Without Licensed ED,87 ,20.6%,92 ,21.4%,86 ,20.3%,86 ,20.5%,82 ,19.8%
+ ED Level:  Standby,34 ,8.0%,36 ,8.4%,34 ,8.0%,32 ,7.6%,30 ,7.2%
+ ED Level:  Basic,293 ,69.3%,293 ,68.1%,296 ,69.8%,293 ,69.8%,294 ,70.8%
+ ED Level:  Comprehensive,9 ,2.1%,9 ,2.1%,8 ,1.9%,9 ,2.1%,9 ,2.2%
+ Total GAC Hospitals,423 ,100.0%,430 ,100.0%,424 ,100.0%,420 ,100.0%,415 ,100.0%
+,,,,,,,,,,
+ Designated Trauma Centers,2013,,2014,,2015,,2016,,2017,
+,Number,Percent,Number,Percent,Number,Percent,Number,Percent,Number,Percent
+ Trauma Center Level I,13 ,17.8%,13 ,17.6%,12 ,16.2%,13 ,17.6%,14 ,18.4%
+ Trauma Center Level II,35 ,47.9%,37 ,50.0%,37 ,50.0%,37 ,50.0%,37 ,48.7%
+ Trauma Center Level III,14 ,19.2%,13 ,17.6%,13 ,17.6%,13 ,17.6%,14 ,18.4%
+ Trauma Center Level IV,11 ,15.1%,11 ,14.9%,12 ,16.2%,11 ,14.9%,11 ,14.5%
+ Total Trauma Centers,73 ,100.0%,74 ,100.0%,74 ,100.0%,74 ,100.0%,76 ,100.0%
+,,,,,,,,,,
+ Number of Pediatric Trauma Centers:,15 ,,16 ,,17 ,,17 ,,17 ,
+,,,,,,,,,,
+ED Services Available,2013,,2014,,2015,,2016,,2017,
+,24 Hour,On-Call,24 Hour,On-Call,24 Hour,On-Call,24 Hour,On-Call,24 Hour,On-Call
+  Anesthesiologist,151,187,153,186,157,182,143,192,147,184
+  Laboratory Services,328,25,331,25,331,25,328,26,326,23
+  Operating Room,132,204,134,203,135,204,127,208,131,199
+  Pharmacist,223,125,228,122,227,123,219,130,226,118
+  Physician,339,18,340,21,340,18,338,17,333,16
+  Psychiatric ER,70,165,55,181,60,176,65,180,68,177
+  Radiology Services,295,59,294,63,290,66,291,62,294,54
+ ED Patient Treatment Stations,2013,,2014,,2015,,2016,,2017,
+ Patient Treatment Stations ,"7,609 ",,"7,800 ",,"7,878 ",,"7,889 ",,"8,056 ",
+ Treatment Stations per ED Hospital,23 ,,23 ,,23 ,,24 ,,24 ,
+ ED Visits* per Treatment Station,"1,769 ",,"1,799 ",,"1,877 ",,"1,906 ",,"1,937 ",
+" *Includes visits, admits, and non-emergency visits",,,,,,,,,,
+EMS Visit by Type (Not resulting in admission),2013,,2014,,2015,,2016,,2017,
+,Number,Percent,Number,Percent,Number,Percent,Number,Percent,Number,Percent
+ Minor   (CPT 99281),"796,341 ",7.3%,"795,595 ",6.8%,"803,745 ",6.5%,"770,472 ",6.1%,"730,074 ",5.6%
+ Low / Moderate   CPT 99282),"2,030,523 ",18.5%,"2,047,176 ",17.6%,"2,147,756 ",17.4%,"2,242,446 ",17.7%,"2,090,467 ",16.1%
+ Moderate   (CPT 99283),"4,552,767 ",41.5%,"4,722,538 ",40.5%,"5,012,873 ",40.6%,"5,095,119 ",40.3%,"5,243,124 ",40.3%
+ Severe Without Life Threat (CPT 99284),"2,641,914 ",24.1%,"2,914,452 ",25.0%,"3,102,891 ",25.1%,"3,177,175 ",25.1%,"3,426,377 ",26.4%
+ Severe With Life Threat   (CPT 99285),"939,189 ",8.6%,"1,175,375 ",10.1%,"1,272,265 ",10.3%,"1,364,186 ",10.8%,"1,506,518 ",11.6%
+   Total ED Visits,"10,960,734 ",100.0%,"11,655,136 ",100.0%,"12,339,530 ",100.0%,"12,649,398 ",100.0%,"12,996,560 ",100.0%
+ Total ED Visits per Day,"30,029 ",,"31,932 ",,"33,807 ",,"34,561 ",,"35,607 ",
+,,,,,,,,,,
+ EMS Admissions,2013,,2014,,2015,,2016,,2017,
+,Number,Percent of Total Visits,Number,Percent of Total Visits,Number,Percent of Total Visits,Number,Percent of Total Visits,Number,Percent of Total Visits
+ Minor   (CPT 99281),"5,280 ",0.3%,"6,542 ",0.4%,"4,361 ",0.2%,"6,556 ",0.3%,"3,527 ",0.2%
+ Low / Moderate   CPT 99282),"16,947 ",0.9%,"26,008 ",1.4%,"22,343 ",1.2%,"22,198 ",1.2%,"12,992 ",0.7%
+ Moderate   (CPT 99283),"159,570 ",8.7%,"186,059 ",10.0%,"172,492 ",9.3%,"222,983 ",11.6%,"190,795 ",9.9%
+ Severe Without Life Threat (CPT 99284),"485,013 ",26.5%,"460,086 ",24.7%,"446,002 ",24.0%,"419,816 ",21.9%,"382,578 ",19.8%
+ Severe With Life Threat   (CPT 99285),"1,062,264 ",58.0%,"1,106,938 ",59.5%,"1,139,926 ",61.3%,"1,173,909 ",61.2%,"1,249,622 ",64.7%
+ Admissions Not Specified by Type*,"102,731 ",5.6%,"73,895 ",4.0%,"73,519 ",4.0%,"71,950 ",3.8%,"92,891 ",4.8%
+   Total EMS Admissions,"1,831,805 ",100.0%,"1,859,528 ",100.0%,"1,858,643 ",100.0%,"1,917,412 ",100.0%,"1,932,405 ",100.0%
+,,,,,,,,,,
+" * Beginning in 2008, the form allows hospitals to report total admissions without specifying the type.",,,,,,,,,,
+ Other ED Visits,2013,,2014,,2015,,2016,,2017,
+,Number,Percent of Total Visits,Number,Percent of Total Visits,Number,Percent of Total Visits,Number,Percent of Total Visits,Number,Percent of Total Visits
+ Scheduled Non-emergency (clinic) Visits Seen in ED,"666,290 ",5.0%,"517,372 ",3.7%,"587,959 ",4.0%,"466,074 ",3.1%,"679,037 ",4.4%
+      Non-emergency Visits per Day,"1,825 ",,"1,417 ",,"1,611 ",,"1,273 ",,"1,860 ",
+" Registered, Left Without Being Seen","311,220 ",2.3%,"311,735 ",2.2%,"363,152 ",2.5%,"326,587 ",2.2%,"321,833 ",2.1%
+      LWOBS per Day,853 ,,854 ,,995 ,,892 ,,882 ,
+,,,,,,,,,,
+ Total ED Encounters*,"13,458,829 ",,"14,032,036 ",,"14,786,132 ",,"15,032,884 ",,"15,608,002 ",
+ Number of ED Visits per Day,"36,874 ",,"38,444 ",,"40,510 ",,"41,073 ",,"42,762 ",
+ Number of ED Visits per Hour,"1,536 ",,"1,602 ",,"1,688 ",,"1,711 ",,"1,782 ",
+" * Includes visits, admits, and non-emergency visits",,,,,,,,,,
+ED - Ambulance Diversion,2013,,2014,,2015,,2016,,2017,
+EDs That Diverted Ambulances at Least ,,,,,,,,,,
+Once During Year,157 ,,153 ,,154 ,,159 ,,167 ,
+Percent of Hospitals with ED That Diverted,,,,,,,,,,
+Ambulances at Least Once During Year,46.7%,,45.3%,,45.6%,,47.6%,,50.2%,
+,,,,,,,,,,
+Ambulance Diversion Hours,2013,,2014,,2015,,2016,,2017,
+,Diversion,Avg Hrs /,Diversion,Avg Hrs /,Diversion,Avg Hrs /,Diversion,Avg Hrs /,Diversion,Avg Hrs /
+,Hours,Day,Hours,Day,Hours,Day,Hours,Day,Hours,Day
+January,"11,536 ",372.1 ,"9,993 ",322.4 ,"17,413 ",561.7 ,"12,087 ",389.9 ,"12,852 ",414.6 
+February,"7,382 ",263.6 ,"5,312 ",189.7 ,"8,977 ",320.6 ,"16,777 ",578.5 ,"8,307 ",296.7 
+March,"5,495 ",177.3 ,"4,941 ",159.4 ,"8,638 ",278.6 ,"8,793 ",283.6 ,"7,692 ",248.1 
+April,"4,157 ",138.6 ,"4,839 ",161.3 ,"6,938 ",231.3 ,"6,935 ",231.2 ,"6,076 ",202.5 
+May,"3,885 ",125.3 ,"5,159 ",166.4 ,"6,367 ",205.4 ,"4,839 ",156.1 ,"5,182 ",167.2 
+June,"4,263 ",142.1 ,"5,074 ",169.1 ,"6,475 ",215.8 ,"6,125 ",204.2 ,"4,818 ",160.6 
+July,"4,125 ",133.1 ,"5,422 ",174.9 ,"6,395 ",206.3 ,"6,532 ",210.7 ,"4,682 ",151.0 
+August,"4,051 ",130.7 ,"6,047 ",195.1 ,"6,818 ",219.9 ,"6,200 ",200.0 ,"4,680 ",151.0 
+September,"4,196 ",139.9 ,"7,330 ",244.3 ,"7,813 ",260.4 ,"6,873 ",229.1 ,"5,370 ",179.0 
+October,"3,974 ",128.2 ,"6,297 ",203.1 ,"7,105 ",229.2 ,"5,582 ",180.1 ,"6,180 ",199.4 
+November,"3,438 ",114.6 ,"5,459 ",182.0 ,"5,330 ",177.7 ,"5,589 ",186.3 ,"4,750 ",158.3 
+December,"4,986 ",160.8 ,"7,591 ",244.9 ,"8,174 ",263.7 ,"8,355 ",269.5 ,"11,909 ",384.2 
+  Total Hours,"61,488 ",168.5 ,"73,464 ",201.3 ,"96,443 ",264.2 ,"94,687 ",258.7 ,"82,498 ",226.0 
