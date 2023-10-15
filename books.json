@@ -1,0 +1,27 @@
+{
+  "books": {
+    "book": [
+      {
+        "Title": "Illuminae",
+        "Author": "Amie Kaufman, Jay Kristoff",
+        "Pages": "608",
+        "Publisher": "Knopf Books for Young Readers",
+        "Year": "2015"
+      },
+      {
+        "Title": "The Martian",
+        "Author": "Andy Weir",
+        "Pages": "387",
+        "Publisher": "Broadway Books",
+        "Year": "2014"
+      },
+      {
+        "Title": "Stringers",
+        "Author": "Chris Panatier",
+        "Pages": "428",
+        "Publisher": "Angry Robot",
+        "Year": "2022"
+      }
+    ]
+  }
+}
