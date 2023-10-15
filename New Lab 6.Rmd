@@ -1,0 +1,182 @@
+---
+title: "Lab 6: Inference for Categorical Data"
+author: "Julia Ferris"
+date: "`r Sys.Date()`"
+output: openintro::lab_report
+---
+
+```{r load-packages, message=FALSE}
+library(tidyverse)
+library(openintro)
+library(infer)
+```
+
+## Exercise 1
+### What are the counts within each category for the amount of days these students have texted while driving within the past 30 days?
+
+0             --- 4792
+1-2           --- 925
+3-5           --- 493
+6-9           --- 311
+10-19         --- 373
+20-29         --- 298
+30            --- 827
+did not drive --- 4646
+NA            --- 918
+
+```{r view-girls-counts}
+library(dplyr)
+yrbss |>
+  count(text_while_driving_30d)
+ggplot(yrbss, aes(x=text_while_driving_30d)) +
+  geom_bar(fill='red') +  labs(x='Team') +
+  labs(title = "Texting While Driving the Past 30 Days")
+```
+
+
+## Exercise 2
+### What is the proportion of people who have texted while driving every day in the past 30 days and never wear helmets?
+
+0.07214901 is the proportion of people who texted while driving all 30 days and never wore helmets.
+
+```{r trend-girls}
+allTextingAndNoHelmet <- nrow(yrbss[(yrbss$helmet_12m == 'never') & (yrbss$text_while_driving_30d == '30'), ])
+totalPeople <- nrow(yrbss)
+prop <- allTextingAndNoHelmet / totalPeople
+prop
+```
+
+
+## Exercise 3
+### What is the margin of error for the estimate of the proportion of non-helmet wearers that have texted while driving each day for the past 30 days based on this survey?
+
+0.004440036 is the margin of error for the yrbss survey's non-helmet wearers that texted while driving the past 30 days.
+
+```{r plot-prop-boys-arbuthnot}
+marginOfError <- 2 * sqrt(prop * (1 - prop)/totalPeople)
+marginOfError
+```
+
+
+## Exercise 4
+### Using the infer package, calculate confidence intervals for two other categorical variables (you'll need to decide which level to call "success", and report the associated margins of error. Interpet the interval in context of the data. It may be helpful to create new data sets for each of the two countries first, and then use these data sets to construct the confidence intervals.
+
+Confidence Interval for less than 1 hour of TV per school day: (0.2951302, 0.3102341)
+Confidence Interval for American Indian or Alaska Native:      (0.0267211, 0.03349415)
+
+```{r dim-present}
+set.seed(12345)
+
+yrbss <-
+  yrbss |>
+  mutate(lowTV = ifelse((hours_tv_per_school_day == "<1") | (hours_tv_per_school_day == "do not watch") , "yes", "no"))
+yrbss |>
+  filter(!is.na(lowTV)) |>
+  specify(response = lowTV, success = "yes") |>
+  generate(reps = 1000, type = "bootstrap") |>
+  calculate(stat = "prop") |>
+  get_ci(level = 0.95)
+
+yrbss <-
+  yrbss |>
+  mutate(amerIndianAlaskaNative = ifelse(race == "American Indian or Alaska Native" , "yes", "no"))
+yrbss |>
+  filter(!is.na(amerIndianAlaskaNative)) |>
+  specify(response = amerIndianAlaskaNative, success = "yes") |>
+  generate(reps = 1000, type = "bootstrap") |>
+  calculate(stat = "prop") |>
+  get_ci(level = 0.95)
+```
+
+
+## Exercise 5
+### Describe the relationship between p and me. Include the margin of error vs. population proportion plot you constructed in your answer. For a given sample size, for which value of p is margin of error maximized?
+
+p and me have a parabolic distribution. The margin of error is highest when p has a value of 0.50.
+
+```{r count-compare}
+n <- 1000
+p <- seq(from = 0, to = 1, by = 0.01)
+me <- 2 * sqrt(p * (1 - p)/n)
+dd <- data.frame(p = p, me = me)
+ggplot(data = dd, aes(x = p, y = me)) + 
+  geom_line() +
+  labs(title = "Margin of Error for Population Proportions",
+       x = "Population Proportion", y = "Margin of Error")
+```
+
+
+## Exercise 6
+### Describe the sampling distribution of sample proportions at n = 300 and p = 0.1. Be sure to note the center, spread, and shape.
+
+The center is near 0.1. The spread is from about 0.05 to 0.15. The shape is a bell-curve but with two peaks close together.
+
+
+## Exercise 7
+### Keep n constant and change p. How does the shape, center, and spread of the sampling distribution vary as p changes. You might want to adjust min and max for the x-axis for a better view of the distribution.
+
+The shape and spread remained about the same, but the center shifted closer to the new p. 
+
+
+## Exercise 8
+### Now also change n. How does n appear to affect the distribution of p-hat?
+
+When p was constant and n decreased, the spread got wider and the center remained about the same. The shape was also similar.
+
+
+## Exercise 9
+### Is there convincing evidence that those who sleep 10+ hours per day are more likely to strength train every day of the week? As always, write out the hypotheses for any tests you conduct and outline the status of the conditions for inference. If you find a significant difference, also quantify this difference with a confidence interval.
+
+H0: People who sleep 10+ hours strength train every day at the same percentage as people who sleep less than 10 hours.
+HA: People who sleep 10+ hours strength train every day more often than people who sleep less than 10 hours.
+
+The two groups did not sleep the same. People who slept 10+ hours had a higher percentage of people strength training every day of the week. Therefore, I would reject the null hypothesis. The confidence interval is (0.005210003, 0.008257855). Since 0 is not part of the range, I would say the results support the alternate hypothesis. However, 0 is very close to the range, so I would want more evidence to claim the alternate hypothesis is true. It does not seem to be a significant difference.
+
+```{r}
+set.seed(1001)
+tenPlusStrength <- 
+  yrbss |>
+  filter(school_night_hours_sleep == "10+") |>
+  count(strength_training_7d)
+
+tenPlusStrength |>
+  mutate(percent = tenPlusStrength$n / sum(tenPlusStrength$n))
+
+noTenPlusStrength <-
+  yrbss |>
+  filter(school_night_hours_sleep != "10+") |>
+  count(strength_training_7d)
+
+noTenPlusStrength |>
+  mutate(percent = noTenPlusStrength$n / sum(noTenPlusStrength$n))
+
+yrbss <-
+  yrbss |>
+  mutate(strengthTraning = ifelse((strength_training_7d == "7") & (school_night_hours_sleep == "10+") , "yes", "no"))
+yrbss |>
+  filter(!is.na(strengthTraning)) |>
+  specify(response = strengthTraning, success = "yes") |>
+  generate(reps = 1000, type = "bootstrap") |>
+  calculate(stat = "prop") |>
+  get_ci(level = 0.95)
+```
+
+
+## Exercise 10
+### Let's say there has been no difference in likeliness to strength train every day of the week for those who sleep 10+ hours. What is the probablity that you could detect a change (at a significance level of 0.05) simply by chance? Hint: Review the definition of the Type 1 error.
+
+Since the significance level is 0.05, the probability of a type 1 error is 5%.
+
+
+## Exercise 11
+### Suppose you're hired by the local government to estimate the proportion of residents that attend a religious service on a weekly basis. According to the guidelines, the estimate must have a margin of error no greater than 1% with 95% confidence. You have no idea what to expect for p. How many people would you have to sample to ensure that you are within the guidelines? Hint: Refer to your plot of the relationship between p and margin of error. This question does not require using a dataset.
+
+9604 people
+
+```{r}
+#Z * Z * p * (1 - p) / ME^2
+Z <- 1.96
+p <- 0.5
+ME <- 0.01
+(Z * Z * p * (1 - p)) / (ME * ME)
+```
