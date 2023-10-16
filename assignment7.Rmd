@@ -1,0 +1,68 @@
+---
+title: "Assignment 7"
+author: "Julia Ferris"
+date: "2023-10-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+In this file, three data frames (tables) are created. Each one shows the same data, but each one has data from different types of sources. The first one is from a json file, the second is from a html file, and the third is from an xml file. All the tables are at the end of this document.
+
+```{r import-data}
+library(rvest)
+library(rjson)
+library(jsonlite)
+jsonData <- fromJSON("https://raw.githubusercontent.com/juliaDataScience-22/cuny-fall-23/Assignment-7/books.json")
+
+library(RCurl)
+library(XML)
+url <- getURL("https://github.com/juliaDataScience-22/cuny-fall-23/blob/Assignment-7/books.html", ssl.verifyPeer=FALSE)
+htmlData1 <- read_html(url)
+tables <- html_nodes(htmlData1, "table")
+htmlData <- html_table(tables)
+htmlData <- as.data.frame(htmlData)
+
+
+library(xml2)
+newXml <- read_xml("https://raw.githubusercontent.com/juliaDataScience-22/cuny-fall-23/edefcf444d4ef72ead919f974d8836d0f62e58ab/books.xml")
+parsed <- xmlParse(newXml)
+xmlData <- xmlToDataFrame(parsed)
+
+```
+
+```{r to-prepare-final-tables}
+library(stringr)
+jsonData$books$book[c('Author_One', 'Author_Two')] <- str_split_fixed(jsonData$books$book$Author, ',', 2)
+jsonData$books$book <- jsonData$books$book[,-2]
+
+htmlData[c('Author_One', 'Author_Two')] <- str_split_fixed(htmlData$Author, ',', 2)
+htmlData <- htmlData[,-2]
+
+xmlData[c('Author_One', 'Author_Two')] <- str_split_fixed(xmlData$Author, ',', 2)
+xmlData <- xmlData[,-2]
+
+```
+
+```{r final-tables}
+library(gt)
+gt(jsonData$books$book) |>
+  tab_header(
+    title = "Table 1",
+    subtitle = "JSON Data"
+  )
+gt(htmlData) |>
+  tab_header(
+    title = "Table 2",
+    subtitle = "HTML Data"
+  )
+gt(xmlData) |>
+  tab_header(
+    title = "Table 3",
+    subtitle = "XML Data"
+  )
+
+```
