@@ -1,0 +1,121 @@
+---
+title: "vaccine_extra_credit"
+author: "Julia Ferris"
+date: "2023-10-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Import the Data
+
+I used the read.csv() function to read the data from a csv file.
+
+```{r cars}
+vaccineData <- read.csv("https://raw.githubusercontent.com/juliaDataScience-22/cuny-fall-23/manage-acquire-data/vaccine_data.csv")
+```
+
+## Format the Data
+
+To format the data, I made the types of data the names of the columns. I renamed the first and last columns, and then I fixed the age groups so each row had an age group. To sort through the data, I broke it up into counts and percentages.
+
+Next, I used pivot_longer() to make the two parts tidy tables. After this, I combined the tables into a final table. I calculated the missing percentages and the efficacy vs. severe disease. To determine the missing percentages, I used the following formula:
+
+(number of people) / (100,000 people)
+
+To determine the efficacy vs. severe disease, I used the following formula:
+
+1 - (% fully vaxed severe cases per 100K / % not vaxed severe cases per 100K)
+
+
+```{r pressure, echo=FALSE}
+library(janitor)
+vaccineData <- vaccineData |> row_to_names(row_number = 1)
+colnames(vaccineData)[1] <- "Age"
+colnames(vaccineData)[6] <- "Efficacy_vs_severe_disease"
+vaccineData$Age <- c("<50", "<50", ">50", ">50")
+part1 <- vaccineData[c(1,3),]
+part2 <- vaccineData[c(2,4),]
+
+library(tidyr)
+part1 <- pivot_longer(part1,
+                      cols = c("Not Vax", "Fully Vax", "Not Vax per 100K", "Fully Vax per 100K"),
+                      names_to = "categories",
+                      values_to = "values")
+part2 <- pivot_longer(part2,
+                      cols = c("Not Vax", "Fully Vax", "Not Vax per 100K", "Fully Vax per 100K"),
+                      names_to = "categories",
+                      values_to = "values")
+vaccineData <- data.frame(age = part1$Age,
+                          categories = part1$categories,
+                          numbers = as.numeric(part1$values),
+                          percents = part2$values,
+                          efficacy_vs_severe_disease = c(NA, NA, NA, NA, NA, NA, NA, NA))
+
+vaccineData$percents[3] <- round(vaccineData$numbers[3] / 100000 * 100, 2)
+vaccineData$percents[4] <- round(vaccineData$numbers[4] / 100000 * 100, 2)
+
+vaccineData$percents[7] <- round(vaccineData$numbers[7] / 100000 * 100, 2)
+vaccineData$percents[8] <- round(vaccineData$numbers[8] / 100000 * 100, 2)
+
+vaccineData$percents <- gsub("%", "", vaccineData$percents)
+
+vaccineData$percents <- as.numeric(vaccineData$percents)
+
+vaccineData$efficacy_vs_severe_disease[1] <- round(1 - (vaccineData$percents[4] / vaccineData$percents[3]), 2)
+vaccineData$efficacy_vs_severe_disease[5] <- round(1 - (vaccineData$percents[8] / vaccineData$percents[7]), 2)
+
+vaccineData$efficacy_vs_severe_disease <- c(vaccineData$efficacy_vs_severe_disease[1], vaccineData$efficacy_vs_severe_disease[1], vaccineData$efficacy_vs_severe_disease[1], vaccineData$efficacy_vs_severe_disease[1], vaccineData$efficacy_vs_severe_disease[5], vaccineData$efficacy_vs_severe_disease[5], vaccineData$efficacy_vs_severe_disease[5], vaccineData$efficacy_vs_severe_disease[5])
+
+library(gt)
+
+gt(vaccineData) |>
+  tab_header(
+    title = "Table 1",
+    subtitle = "Vaccination Data and Severe Cases for Israel"
+  )
+```
+
+## Question 1: Do you have enough information to calculate the total population? What does this total population represent?
+
+There is enough information to calculate the total population. First, you can figure out the population under 50 and the population over 50. Then, you can add them together. To determine the population under 50, do the following calculations:
+
+(Not Vaxed) / (% People Not Vaxed) = 1116834 / 0.233 = 4793278
+(Fully Vaxed) / (% People Fully Vaxed) = 3501118 / 0.73 = 4796052
+
+Find the average of those two values for an approximate population: 4794665 people
+
+To determine the population over 50, do the following calculations:
+
+(Not Vaxed) / (% People Not Vaxed) = 186078 / 0.079 = 2355418
+(Fully Vaxed) / (% People Fully Vaxed) = 2133516 / 0.904 = 2357751
+
+Find the average of those two values for an approximate population: 2360084 people
+
+Then, add the two numbers together: 4794665 + 2360084 = 7152416 people
+
+The total population represents people who were not vaxed, partially vaxed, and fully vaxed.
+
+## Question 2: Calculate the Efficacy vs. Disease. Explain your results.
+
+For the group younger than 50:
+
+```{r less-than-50}
+vaccineData$efficacy_vs_severe_disease[1]
+```
+
+For the group older than 50:
+
+```{r over-50}
+vaccineData$efficacy_vs_severe_disease[5]
+
+```
+
+The positive number indicates that the vaccine was more efficacious against severe disease for the group younger than 50.
+The negative number indicates that the vaccine was less efficacious against severe disease for the group older than 50.
+
+## Question 3: From your calculation of efficacy vs. disease, are you able to compare the rate of severe cases in unvaccinated individuals to that in vaccinated individuals?
+
+I can only compare the rates by age group since it appeared to be more effective in the younger population. In the younger population, more people without a vaccination had severe cases. In the older population, more people who were fully vaccinated had severe cases. One difference is the total population of people under 50 was about two times the total population of people over 50. This skewed the results. Also, the older population is more susceptible to more serious diseases because of their age and possibly other pre-existing conditions that can exacerbate Covid. Therefore, it is challenging to compare the rates of severe cases for unvaccinated and vaccinated people from this data.
