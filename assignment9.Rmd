@@ -1,0 +1,69 @@
+---
+title: "Assignment 9"
+author: "Julia Ferris"
+date: "2023-10-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Load Libraries
+
+```{r libraries}
+library(rjson)
+library(RJSONIO)
+library(gt)
+library(ggplot2)
+```
+
+### Format Data and Create Data Frame
+
+The data was uploaded from the NY Times API I created. It shows data for the top stories in the U.S.
+
+```{r format-data, echo=TRUE}
+usa_data <- fromJSON("https://api.nytimes.com/svc/topstories/v2/us.json?api-key=VhHaGQL7qb0A4ulIICuMg2M5JKNWijv5")
+
+usa_results <- usa_data[['results']]
+
+new1 <- toJSON(usa_results, pretty = TRUE)
+
+test <- fromJSON(new1)
+
+finalData <- c()
+
+for (num in 1:25)
+{
+  sample <- test[[num]]
+  finalData <- rbind(finalData, sample)
+}
+
+finalData <- as.data.frame(finalData)
+gt(finalData[,3:11]) |>
+  tab_header(title = "Top Stories")
+
+```
+
+
+## Short Analysis
+
+I am interested in how long the titles are for each story. The results are below. It appears that most of the titles were relatively long, which is surprising to me because most titles are usually short in my experience.
+
+For reference, the following section contains 50 characters:
+
+  This is a sentence. This is another sentence. Bye.
+
+For more reference, the following section contains 100 characters:
+
+  These are sentences for an article that I think is a bit too long. It just keeps on going and going.
+
+```{r}
+finalData$characters <- nchar(finalData[,3])
+
+ggplot(finalData, aes(characters)) +
+  geom_bar() +
+  labs(title = "Bar Graph of the Number of Characters") +
+  xlab("Number of Characters") +
+  ylab("Frequency")
+```
