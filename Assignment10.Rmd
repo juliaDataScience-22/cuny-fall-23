@@ -1,0 +1,422 @@
+---
+title: "Sentiment Analysis"
+author: "Julia Ferris"
+date: "2023-11-08"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Section 1:
+
+### This section shows the walkthrough of the example seen in Chapter 2 of "Text Mining with R."
+
+In this chunk of code, the data frames are shown for a few of the sentiment lexicons.
+
+```{r section-1-lexicons}
+library(tidytext)
+
+get_sentiments("afinn")
+get_sentiments("bing")
+get_sentiments("nrc")
+
+```
+
+Below, you can see the code they used to convert it into a tidy format and then track the location of each word.
+
+
+```{r section-1-tidy}
+library(janeaustenr)
+library(dplyr)
+library(stringr)
+
+tidy_books <- austen_books() %>%
+  group_by(book) %>%
+  mutate(
+    linenumber = row_number(),
+    chapter = cumsum(str_detect(text, 
+                                regex("^chapter [\\divxlc]", 
+                                      ignore_case = TRUE)))) %>%
+  ungroup() %>%
+  unnest_tokens(word, text)
+```
+
+In the code below, the words that were considered to be in the category "joy" were filtered out of the sentiment lexicon, and these were applied to the book "Emma" to see which joyful words were found in that book.
+
+```{r section-1-joy}
+nrc_joy <- get_sentiments("nrc") %>% 
+  filter(sentiment == "joy")
+
+tidy_books %>%
+  filter(book == "Emma") %>%
+  inner_join(nrc_joy) %>%
+  count(word, sort = TRUE)
+```
+
+When you analyze large sections of text, it is recommended to use fewer lines than the full text. The code below used 80 lines and separated positives and negatives into separate columns.
+
+```{r section-1-80-lines}
+library(tidyr)
+
+jane_austen_sentiment <- tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(book, index = linenumber %/% 80, sentiment) %>%
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>% 
+  mutate(sentiment = positive - negative)
+```
+
+Below, you can see the code that was used to plot the sentiment scores calculated in the last chunk of code. This shows the information for different books.
+
+```{r section-1-plot-scores}
+library(ggplot2)
+
+ggplot(jane_austen_sentiment, aes(index, sentiment, fill = book)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~book, ncol = 2, scales = "free_x")
+```
+
+In the chunk below, the book "Pride and Prejudice" was pulled out of the original data frame.
+
+```{r section-1-pride-prejudice}
+pride_prejudice <- tidy_books %>% 
+  filter(book == "Pride & Prejudice")
+
+pride_prejudice
+```
+
+In this chunk, the code finds the net sentiment in each part of the book text.
+
+```{r section-1-net-sentiment}
+afinn <- pride_prejudice %>% 
+  inner_join(get_sentiments("afinn")) %>% 
+  group_by(index = linenumber %/% 80) %>% 
+  summarise(sentiment = sum(value)) %>% 
+  mutate(method = "AFINN")
+
+bing_and_nrc <- bind_rows(
+  pride_prejudice %>% 
+    inner_join(get_sentiments("bing")) %>%
+    mutate(method = "Bing et al."),
+  pride_prejudice %>% 
+    inner_join(get_sentiments("nrc") %>% 
+                 filter(sentiment %in% c("positive", 
+                                         "negative"))
+    ) %>%
+    mutate(method = "NRC")) %>%
+  count(method, index = linenumber %/% 80, sentiment) %>%
+  pivot_wider(names_from = sentiment,
+              values_from = n,
+              values_fill = 0) %>% 
+  mutate(sentiment = positive - negative)
+```
+
+The three sentiment lexicons were plotted below for comparison.
+
+```{r section-1-three-lexicons-plot}
+bind_rows(afinn, 
+          bing_and_nrc) %>%
+  ggplot(aes(index, sentiment, fill = method)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~method, ncol = 1, scales = "free_y")
+```
+
+The two lines below show the number of positive and negative words in nrc and bing.
+
+```{r section-1-pos-neg}
+get_sentiments("nrc") %>% 
+  filter(sentiment %in% c("positive", "negative")) %>% 
+  count(sentiment)
+
+get_sentiments("bing") %>% 
+  count(sentiment)
+```
+
+In this chunk of code, you can see how to count the words that appear multiple times in a book.
+
+```{r section-1-count-words}
+bing_word_counts <- tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  ungroup()
+
+bing_word_counts
+```
+
+Use the code  below to plot the counts for negative and positive words.
+
+```{r section-1-plot-counts}
+bing_word_counts %>%
+  group_by(sentiment) %>%
+  slice_max(n, n = 10) %>% 
+  ungroup() %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(n, word, fill = sentiment)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~sentiment, scales = "free_y") +
+  labs(x = "Contribution to sentiment",
+       y = NULL)
+```
+
+Some words are assigned negative or positive incorrectly based on the context of a sentence. The code below shows how to add a word to a list.
+
+```{r section-1-change-assignment}
+custom_stop_words <- bind_rows(tibble(word = c("miss"),  
+                                      lexicon = c("custom")), 
+                               stop_words)
+
+custom_stop_words
+```
+
+The library wordcloud can be used to create clouds of words showing the most common words.
+
+```{r section-1-wordcloud}
+library(wordcloud)
+
+tidy_books %>%
+  anti_join(stop_words) %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100))
+```
+
+In the library reshape2, you can create a word cloud that compares two types of words.
+
+```{r section-1-comparison-cloud}
+library(reshape2)
+
+tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = c("gray20", "gray80"),
+                   max.words = 100)
+```
+
+This code shows how to look at sentences as a whole instead of just words.
+
+```{r section-1-sentences}
+p_and_p_sentences <- tibble(text = prideprejudice) %>% 
+  unnest_tokens(sentence, text, token = "sentences")
+
+p_and_p_sentences$sentence[2]
+```
+
+In the chunk of code below, you can see how the chapters were added to a data frame.
+
+```{r section-1-chapters}
+austen_chapters <- austen_books() %>%
+  group_by(book) %>%
+  unnest_tokens(chapter, text, token = "regex", 
+                pattern = "Chapter|CHAPTER [\\dIVXLC]") %>%
+  ungroup()
+
+austen_chapters %>% 
+  group_by(book) %>% 
+  summarise(chapters = n())
+```
+
+You can use the code below to get negative words in the novels and make a data frame of the number of negative words in each specified chapter.
+
+```{r section-1-negative-words}
+bingnegative <- get_sentiments("bing") %>% 
+  filter(sentiment == "negative")
+
+wordcounts <- tidy_books %>%
+  group_by(book, chapter) %>%
+  summarize(words = n())
+
+tidy_books %>%
+  semi_join(bingnegative) %>%
+  group_by(book, chapter) %>%
+  summarize(negativewords = n()) %>%
+  left_join(wordcounts, by = c("book", "chapter")) %>%
+  mutate(ratio = negativewords/words) %>%
+  filter(chapter != 0) %>%
+  slice_max(ratio, n = 1) %>% 
+  ungroup()
+```
+
+## Section 2
+
+### This section shows sentiment analysis of an article I chose.
+
+The article is titled "Data Science and the Art of Persuasion." The article talks about how organizations struggle to communicate insights about the information they collected. The article explains why this occurs and how it can be fixed. The author was Scott Berinato.
+
+Steps:
+
+1. I loaded all the libraries used in the code. I included libraries that were loaded previously in the top section to allow for duplication of just this section of code.
+
+```{r section-2-libraries}
+
+# Load libraries
+library(readr)
+library(tidyr)
+library(stringr)
+library(dplyr)
+library(wordcloud)
+library(tidytext)
+library(ggplot2)
+
+```
+
+2. I imported the article as a text file and then converted it into a data frame.
+
+```{r section-2-import}
+
+# Import the article as text and convert to data frame
+article <- read_file("https://raw.githubusercontent.com/juliaDataScience-22/cuny-fall-23/manage-acquire-data/Data%20Science%20Article.txt")
+
+article <- as.data.frame(article)
+
+```
+
+3. I tidied the data in the data frame. Some characters and symbols were not helpful, so I removed those from the words.
+
+``` {r section-2-tidy-data}
+
+#Tidy the data and remove unwanted characters
+
+article <- separate_longer_delim(article, article, delim = "\r\n")
+article <- separate_longer_delim(article, article, delim = " ")
+article <- separate_longer_delim(article, article, delim = "/")
+article <- separate_longer_delim(article, article, delim = "-")
+article <- separate_longer_delim(article, article, delim = "—")
+article <- separate_longer_delim(article, article, delim = "….")
+
+article[article == ''] <- NA
+article <-
+  article |> 
+  na.omit()
+
+article$article <- gsub("\\.$", "", article$article)
+article$article <- gsub("\\,$", "", article$article)
+
+article$article <- iconv(article$article, from = 'UTF-8', to = 'ASCII//TRANSLIT')
+article$article <- str_remove_all(article$article, '\"')
+
+article$article <- gsub("^\\:", "", article$article)
+article$article <- gsub("\\:$", "", article$article)
+article$article <- gsub("\\,\"$", "", article$article)
+
+article$article <- gsub("\\,$", "", article$article)
+article$article <- gsub("\\.$", "", article$article)
+article$article <- gsub("\\.)$", "", article$article)
+article$article <- gsub("\\.'$", "", article$article)
+article$article <- gsub("U.S", "U.S.", article$article)
+article$article <- gsub("\\;$", "", article$article)
+article$article <- gsub("^\\[", "", article$article)
+article$article <- gsub("\\]$", "", article$article)
+article$article <- gsub("^\\(", "", article$article)
+article$article <- gsub("\\)$", "", article$article)
+article$article <- gsub("\\?$", "", article$article)
+article$article <- gsub("^\\'", "", article$article)
+article$article <- gsub("\\'$", "", article$article)
+article$article <- gsub("\\-", "", article$article)
+
+article$article <- tolower(article$article)
+
+```
+
+4. I created the data frame of all unique words.
+
+``` {r section-2-unique}
+# Create the data frame and add all the unique words
+articleWords <- data.frame(word = c(1:length(unique(article$article))),
+                           count = c(1:length(unique(article$article))))
+articleWords$word <- unique(sort(article$article))
+
+```
+
+5. I counted the number of occurrences of each word and added the counts to the data frame from Step 4.
+
+``` {r section-2-count}
+# Count each word
+num <- 1
+for (myWord in articleWords$word)
+{
+  total <- 
+    article |> 
+    filter(article == myWord) |> 
+    count() |> 
+    as.integer()
+  articleWords$count[num] <- total
+  num <- num + 1
+}
+
+articleWords <-
+  articleWords |>
+  arrange(desc(count))
+
+```
+
+6. I created a list of top words that were not important. These words were not helpful in understanding the words I wanted to focus on. They were not related to data science. They were mostly words used in between the words that related to the main topic of the article. I only removed these words if they were in the top 100 based on count. After creating that list, I removed them from the data frame.
+
+``` {r section-2-remove-unimportant}
+
+# Create a list of top words that were not important
+
+toDelete <- c("the", "to", "and", "a", "of", "in", "for", "it", "that", "is", "with", "on", "will", "they", "have", "but", "are", "as", "who", "from", "their", "or", "them", "this", "one", "be", "not", "he", "it's", "at", "i", "an", "can", "some", "his", "most", "about", "all", "do", "how", "what", "you", "by", "those", "when", "also", "don't", "good", "her", "last", "make", "may", "more", "part", "person", "because", "has", "other", "up", "were", "even", "if", "many", "need", "no", "say", "says", "way", "well", "would", "any", "find", "into", "over", "same", "should", "used", "was", "we", "aren't", "both", "can't", "could", "getting", "just", "makers", "my", "new", "often", "talents", "set", "that's", "these", "they're", "use", "which", "your", "close", "free", "gap", "get", "hard", "isn't", "its", "know", "lay", "lead", "learn", "like", "managers", "might", "much", "needs", "now", "only", "out", "see", "so", "take", "than", "three", "want", "where")
+articleWords <- articleWords[-(which(articleWords$word %in% toDelete)),]
+
+```
+
+7. I made the word cloud of the top 100 words that I considered most relevant since the previous step removed words that were not relevant to the article.
+
+As you can see, some of the top words were "data", "scientists", "team", "analysis", "talent", "communication", "business", "project", and so on. These words all relate to data science, so they make complete sense based on the topic of the article. I also think it is important to note the high count of team, support, and communication. Data science is not work that is done alone. People work together to come to a final result, and this article shows that with these words. You can get a lot out of the word cloud without even reading the article, which is interesting!
+
+``` {r section-2-cloud}
+# Create the word cloud
+
+wordcloud(articleWords$word, articleWords$count, max.words = 100)
+
+```
+
+8. Lastly, I created bar graphs of words based on the categories in the sentiment lexicon called loughran.
+
+It is clear to see that both positive and negative words appeared with simialar frequencies. This makes sense because the article first described a problem, and then described a possible solution to this problem. The negative and positive words were split up because of this format. The other categories were not as prevalent in the article except for "uncertainty," which appeared a few times throughout the article.
+
+Please note that in the graphs below, not all words from the article were included. Only the words that were part of the sentiment lexicon called loughran were pulled out of the article if present, so some of the words in the article that should have fit into these categories did not appear in the graphs.
+
+``` {r section-2-graphs}
+# Show the bar graphs for the most common data science words by category
+
+articleWordsFinal <- articleWords %>%
+     inner_join(get_sentiments("loughran"))
+
+articleWordsFinal %>%
+     group_by(sentiment) %>%
+     slice_max(count, n = 10) %>% 
+     ungroup() %>%
+     mutate(word = reorder(word, count)) %>%
+     ggplot(aes(count, word, fill = sentiment)) +
+     geom_col(show.legend = FALSE) +
+     facet_wrap(~sentiment, scales = "free_y") +
+     labs(x = "Contribution to sentiment",
+          y = NULL,
+          title = "Categories of Words Based on the Loughran Sentiment Lexicon")
+
+
+```
+
+
+## Sources:
+
+https://www.tidytextmining.com/sentiment.html
+
+https://sparkbyexamples.com/r-programming/r-import-text-file-as-a-string/
+
+https://stackoverflow.com/questions/50861626/removing-period-from-the-end-of-string
+
+https://stackoverflow.com/questions/21781014/remove-all-line-breaks-enter-symbols-from-the-string-using-r
+
+https://sparkbyexamples.com/r-programming/replace-empty-string-with-na-in-r-dataframe/
+
+https://stackoverflow.com/questions/10294284/remove-all-special-characters-from-a-string-in-r
+
+https://www.geeksforgeeks.org/convert-string-from-uppercase-to-lowercase-in-r-programming-tolower-method/
+
+https://stackoverflow.com/questions/75084373/how-to-remove-rows-by-condition-in-r
+
+
+
