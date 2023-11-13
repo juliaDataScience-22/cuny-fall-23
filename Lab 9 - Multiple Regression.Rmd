@@ -1,0 +1,315 @@
+---
+title: "Lab 9: Multiple Linear Regression"
+author: "Julia Ferris"
+date: "`r Sys.Date()`"
+output: openintro::lab_report
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(eval = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r load-packages, message=FALSE}
+library(tidyverse)
+library(openintro)
+library(GGally)
+```
+
+## Exercise 1
+### Is this an observational study or an experiment? The original research question posed in the paper is whether beauty leads directly to the differences in course evaluations. Given the study design, is it possible to answer this question as it is phrased? If not, rephrase the question.
+
+This is an observational study. In an experiment, there is a control group and an experimental group where the experimental group receives some sort of treatment or change in a particular factor while the control group does not. In this case, the study is observational because the experimenters used data that already existed and analyzed that data. To change this study to an experimental study, the researchers could have randomized a group of students into two groups where in one group, all the teachers were rated about the same in terms of beauty and in another group, the teachers were rated differently on the same scale of beauty to see if results varied.
+
+## Exercise 2
+### Describe the distribution of `score`. Is the distribution skewed? What does that tell you about how students rate courses? Is this what you expected to see? Why, or why not?
+
+The distribution is left-skewed. Most of the courses were rated higher than 3.5. Since this distribution is left-skewed, most students rated courses on the higher end. I expected this because students choose their major, which in turn means they basically choose the types of classes they want to take. They usually like most of their classes because the content of those classes relates to the career they are hoping to eventually have. If they mostly rated their courses low, then they might be in the wrong program for their interests.
+
+```{r exercise-2}
+mean(evals$score)
+median(evals$score)
+range(evals$score)
+
+hist(evals$score)
+```
+
+
+## Exercise 3
+### Excluding `score`, select two other variables and describe their relationship with each other using an appropriate visualization.
+
+The variables are Class Level and Class Percent Eval. The two variables did not appear to have any relationship. I expected the higher class levels to have higher percentages of students who responded, but that was not the case. The percentages varied greatly for both class levels, and those ranges were about the same as you can see from the Box Plot below.
+
+```{r exercise-3}
+ggplot(evals, aes(cls_level, cls_perc_eval)) +
+  geom_boxplot() +
+  labs(title = "Percent of Students Who Completed the Evaluation by Class Level",
+       x = "Class Level",
+       y = "Class Percent Eval")
+
+```
+
+
+## Exercise 4
+### Replot the scatterplot, but this time use `geom_jitter` as your layer. What was misleading about the initial scatterplot?
+
+The initial scatterplot did not show the concentration of scores in each area. When values overlapped, it was not shown on the other scatterplot. This, however, shows higher concentrations at different locations. It makes it appear more linear than the original scatterplot.
+
+```{r exercise-4}
+ggplot(data = evals, aes(x = bty_avg, y = score)) +
+  geom_jitter() +
+  labs(title = "Course Score by Beauty Average",
+       x = "Beauty Average",
+       y = "Score")
+```
+
+
+## Exercise 5
+### Let's see if the apparent trend in the plot is something more than natural variation. Fit a linear model called `m_bty` to predict average professor score by average beauty rating. Write out the equation for the linear model and interpret the slope. Is average beauty score a statistically significant predictor? Does it appear to be a practically significant predictor?
+
+This is the linear model equation:
+
+y = 0.06664x + 3.88034
+
+y = score
+
+x = beauty average
+
+Average beauty score does not seem to be a statistically significant predictor. The score is 0.1871424, which shows a weak correlation. It might be a practically significant predictor because it does show some correlation. This might mean the difference between two courses that would be rated the same by one person except for the beauty score of the two professors. Since only six people rated them out of everyone, it is also challenging to tell if the beauty scores are accurate. Six people's opinions do not speak for everyone.
+
+The plots below show two ways to add a line to the plot.
+
+```{r exercise-5}
+
+m_bty <- lm(score ~ bty_avg, data = evals)
+
+ggplot(data = evals, aes(x = bty_avg, y = score)) +
+  geom_jitter() +
+  geom_abline(intercept = as.numeric(m_bty$coefficients[1]), 
+              slope = as.numeric(m_bty$coefficients[2])) +
+  labs(title = "Course Score by Beauty Average",
+       x = "Beauty Average",
+       y = "Score")
+
+ggplot(data = evals, aes(x = bty_avg, y = score)) +
+  geom_jitter() +
+  geom_smooth(method = "lm") +
+  labs(title = "Course Score by Beauty Average",
+       x = "Beauty Average",
+       y = "Score")
+
+evals %>% 
+  summarise(cor(bty_avg, score))
+```
+
+
+## Exercise 6
+### Use residual plots to evaluate whether the conditions of least squares regression are reasonable. Provide plots and comments for each one (see the Simple Regression Lab for a reminder of how to make these).
+
+The residual plots and other plots below show that the variability is about equal through the entire plot. More values are under the line than above the line since more points fall below the horizontal line 0 in the residual plots, but overall the variability is random and evenly distributed. Also, the values seem about normally distributed. They are not exact, but they are close to falling on the line in the Q-Q Plot.
+
+```{r exercise-6}
+res <- resid(m_bty)
+
+plot(fitted(m_bty), res)
+abline(0,0)
+
+plot(m_bty)
+```
+
+
+## Exercise 7
+### P-values and parameter estimates should only be trusted if the conditions for the regression are reasonable. Verify that the conditions for this model are reasonable using diagnostic plots.
+
+The conditions for this model are reasonable based on the plots below. The residuals are mostly consistent across the graph. The values on the lower end have a smaller range for residuals, but other than that it looks about consistent. Also, the Q-Q Plot shows the data is about normally distributed. Some values miss the straight line around 2 and 3, but it is still reasonable.
+
+```{r find-max-total}
+m_bty_gen <- lm(score ~ bty_avg + gender, data = evals)
+summary(m_bty_gen)
+
+plot(m_bty_gen)
+```
+
+## Exercise 8
+### Is `bty_avg` still a significant predictor of `score`? Has the addition of `gender` to the model changed the parameter estimate for `bty_avg`?
+
+bty_avg was never a significant predictor of score, but the two had a weak correlation. The addition of gender changed the R-Squared value a bit. It shows the addition of gender made the value better, indicating a slightly stronger relationship. Also, the slope of bty_avg changed slightly after adding gender. It increased by about 0.08, which is not much of a difference.
+
+```{r exercise-8}
+summary(m_bty)
+summary(m_bty_gen)
+```
+
+## Exercise 9
+### What is the equation of the line corresponding to those with color pictures? (*Hint:* For those with color pictures, the parameter estimate is multiplied by 1.) For two professors who received the same beauty rating, which color picture tends to have the higher course evaluation score?
+
+The equation of the line for the black and white pictures:
+
+y = 0.1049x + 3.7974
+
+y = score
+
+x = bty_avg
+
+
+The equation of the line for the color pictures:
+
+y = 0.04229x + 3.95826
+
+y = score
+
+x = bty_avg
+
+
+The pictures in black and white tended to have the higher course evaluation score.
+
+```{r exercise-9}
+ggplot(data = evals, aes(x = bty_avg, y = score, color = pic_color)) +
+ geom_smooth(method = "lm", formula = y ~ x, se = FALSE)
+
+blWhite <- 
+  evals |>
+  filter(pic_color == "black&white")
+color <-
+  evals |>
+  filter(pic_color == "color")
+
+lm(score ~ bty_avg, data = blWhite)
+
+lm(score ~ bty_avg, data = color)
+```
+
+## Exercise 10
+### Create a new model called `m_bty_rank` with `gender` removed and `rank` added in. How does R appear to handle categorical variables that have more than two levels? Note that the rank variable has three levels: `teaching`, `tenure track`, `tenured`.
+
+It appeared that R handled categorical variables as separate variables. Each one was either present or not present. The new model is below:
+
+y = 0.06783x - 0.16070z - 0.12623w + 3.98155
+
+y = score
+
+x = bty_avg
+
+z = rank: tenure track
+
+w = rank: tenured
+
+```{r exercise-10}
+m_bty_rank <- lm(score ~ bty_avg + rank, data = evals)
+m_bty_rank
+plot(evals$rank, evals$score)
+```
+
+## Exercise 11
+### Which variable would you expect to have the highest p-value in this model? Why? *Hint:* Think about which variable would you expect to not have any association with the professor score.
+
+Before running the code, I predicted that number of professors would have the highest p-value in the model. Some people like to have one professor. Some people like to have multiple professors. Thus, I assumed it would be about evenly distributed for all the options.
+
+## Exercise 12
+### Check your suspicions from the previous exercise. Include the model output in your response.
+
+After running the code, I see that classes with one professor had the highest p-value of 0.77806. The second-highest variable was upper-level classes. I guessed the number of professors correctly, but I did not consider class level.
+
+```{r exercise-12}
+m_full <- lm(score ~ rank + gender + ethnicity + language + age + cls_perc_eval 
+             + cls_students + cls_level + cls_profs + cls_credits + bty_avg 
+             + pic_outfit + pic_color, data = evals)
+summary(m_full)
+```
+    
+    
+## Exercise 13
+### Interpret the coefficient associated with the ethnicity variable.
+
+Intercept               Estimate    Std. Error  t value   Pr(>|t|) 
+ethnicity not minority  0.1234929   0.0786273   1.571     0.11698
+
+The coefficient for the ethnicity variable was 0.1234929. Based on the boxplot below, it appeared that minority was 0 and not minority was 1 (in terms of the value of the factor used for the equation). This means that if a professor was not a minority, their course was rated 0.1234929 points higher than a course with a minority professor.
+
+```{r exercise-13}
+plot(evals$ethnicity, evals$score)
+```
+
+## Exercise 14
+### Drop the variable with the highest p-value and re-fit the model. Did the coefficients and significance of the other explanatory variables change? (One of the things that makes multiple regression interesting is that coefficient estimates depend on the other variables that are included in the model.) If not, what does this say about whether or not the dropped variable was collinear with the other explanatory variables?
+    
+The coefficients and significance of the other variables barely changed. This shows that the dropped variable was probably collinear with the other variables. The prediction was not affected much by this variable, so it was probably collinear with another variable or multiple ones. If this variable was not collinear with something else, then the other variables would have changed much more than they did.
+
+```{r exercise-14}
+m_almost_full <- lm(score ~ rank + gender + ethnicity + language + age +
+                      cls_perc_eval + cls_students + cls_level + cls_credits +
+                      bty_avg + pic_outfit + pic_color, data = evals)
+summary(m_almost_full)
+summary(m_full)
+```
+
+## Exercise 15
+### Using backward-selection and p-value as the selection criterion, determine the best model. You do not need to show all steps in your answer, just the output for the final model. Also, write out the linear model for predicting score based on the final model you settle on.
+    
+Using backward selection and removing all insignificant p-values, the final model used the following variables:
+
+gender, ethnicity, language, age, cls_perc_eval, cls_credits, bty_avg, and pic_color
+
+All the variables had a p-value less than 0.05. This is the final linear model:
+
+y = 0.202597x + 0.163818z - 0.246683w - 0.006925v + 0.004942m + 0.517205n + 0.046732k - 0.113939d - 0.180870j + 3.907030
+
+x = gender male, z  = ethnicity not minority, w = language not English, v = age, m = class percent eval, n = one credit class, k = beauty average, d = picture outfit not formal, j = picture color color
+
+```{r exercise-15-part-a, include = FALSE}
+m_almost_full <- lm(score ~ rank + gender + ethnicity + language + age +
+                      cls_perc_eval + cls_students + cls_level + cls_credits +
+                      bty_avg + pic_outfit + pic_color, data = evals)
+summary(m_almost_full)
+m_almost_full1 <- lm(score ~ rank + gender + ethnicity + language + age +
+                      cls_perc_eval + cls_students + cls_credits +
+                      bty_avg + pic_outfit + pic_color, data = evals)
+summary(m_almost_full1)
+m_almost_full2 <- lm(score ~ rank + gender + ethnicity + language + age +
+                      cls_perc_eval + cls_credits +
+                      bty_avg + pic_outfit + pic_color, data = evals)
+summary(m_almost_full2)
+m_almost_full3 <- lm(score ~ gender + ethnicity + language + age +
+                      cls_perc_eval + cls_credits +
+                      bty_avg + pic_outfit + pic_color, data = evals)
+summary(m_almost_full3)
+m_almost_full4 <- lm(score ~ gender + ethnicity + language + age +
+                      cls_perc_eval + cls_credits +
+                      bty_avg + pic_color, data = evals)
+summary(m_almost_full4)
+
+```
+   
+```{r exercise-15-part-b}
+m_almost_full4 <- lm(score ~ gender + ethnicity + language + age +
+                      cls_perc_eval + cls_credits +
+                      bty_avg + pic_color, data = evals)
+summary(m_almost_full4)
+```
+
+## Exercise 16
+### Verify that the conditions for this model are reasonable using diagnostic plots.
+    
+The conditions for this model are reasonable based on the diagnostic plots. The residuals are mostly evenly distributed. The data is also about normally distributed from the Q-Q Plot. The Scale-Location graph is evenly distributed. The data may have some outliers, but for the most part, the conditions for this model appear reasonable.
+
+```{r exercise-16}
+plot(m_almost_full4)
+```
+   
+    
+## Exercise 17
+### The original paper describes how these data were gathered by taking a sample of professors from the University of Texas at Austin and including all courses that they have taught. Considering that each row represents a course, could this new information have an impact on any of the conditions of linear regression?
+
+Each row represents a course, not a professor or student. Some students might rate the same professor differently for different courses depending on their interest in the topic of the course. Also, some students might rate the same professor the same regardless of the topic of the course. This can affect the results, and it would not be known which courses were taught by the same professor. One condition of linear regression is independence, but the different courses and their scores would not be independent since one professor can teach multiple classes and each class can be taught by multiple professors.
+
+## Exercise 18
+### Based on your final model, describe the characteristics of a professor and course at University of Texas at Austin that would be associated with a high evaluation score.
+
+A professor who is male, is not a minority, went to a college that taught in English, is younger than other professors, has a black and white school picture, and is rated higher on the beauty scale is more likely to have a higher evaluation score.
+
+A course that has a higher percentage of responses by students and that is only one credit is more likely to have a higher evaluation score.
+
+## Exercise 19
+### Would you be comfortable generalizing your conclusions to apply to professors generally (at any university)? Why or why not?
+
+I would not be comfortable generalizing my conclusions to apply to professors generally. This is a small sample in a specific part of the countries. A larger sample taken from colleges in multiple regions around the country would be more representative of U.S. college students than this sample. Also, it would be a good idea to compare opinions of students from small, medium, and large schools because students likely have different preferences for courses. 
+
