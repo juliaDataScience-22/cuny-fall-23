@@ -1,0 +1,92 @@
+---
+title: "Discussion 11"
+author: "Julia Ferris"
+date: "2023-11-14"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+## Introduction
+
+A recommender system is used to determine the interests of a person and recommend new things, such as songs, videos, food items, or books, to that person. Recommendation algorithms might use people who have similar interests and recommend items that one person purchased to the other person who is similar to the first person. These algorithms might find items similar to items previously purchased or viewed by a user and recommend those to that same user. Many different recommendation algorithms exist depending on the purpose of the recommender system, and multiple algorithms are often used in combination to produce the best results.
+
+One example of an organization that uses a recommender system is YouTube. While watching videos on YouTube, information is collected about users that is analyzed to make recommendations for users. Their specific system involves two parts. In the first part, the algorithm takes all the video options and reduces it to a few hundred options. In the second part, the algorithm orders these videos based on the user's interests, features of the video, and other factors. According to YouTube's website, some specific measures they use for their recommender system include clicks on videos, watch time, survey responses, sharing, and likes/dislikes. Their recommender system also uses information from other people with similar tastes in videos to make recommendations that may not seem to relate. For example, if many people who watch videos about chair-making also listen to a lot of classical music, then a person who listens to a lot of classical music might get recommendations for videos about chair-making even if they have never watched a video like that before.
+
+## Scenario Design Analysis
+
+Scenario Design Analysis is a framework used to analyze the recommendation system design regarding user wants and needs as well as organization wants and needs. This analysis involves three questions:
+
+1. Who are your target users?
+
+2. What are their key goals?
+
+3. How can you help them accomplish those goals?
+
+When using those questions to think about the organization itself, you can rephrase them:
+
+1. How do different target users improve the business, and which users should the organization focus on?
+
+2. What are the key goals of the organization?
+
+3. How can the organization accomplish its goals while accomplishing the goals of the user?
+
+It seems valuable to do this analysis for the users and the organization because it helps in the understanding of the users and the motivations behind the organization.
+
+### Target Users
+
+The target users for the recommender system are people who already use YouTube. These users include children, teenagers, adults, families, teachers, and so on. Many people use YouTube, but people use it for different purposes. The recommender system can be used for all these users and more.
+
+The other set of users of YouTube are people who post videos to YouTube, but this group does not use the recommender system when posting, just when viewing.
+
+### Key User Goals
+
+People watch YouTube to view movies, TV shows, music videos, cooking videos, educational clips, movie trailers, and more. The main goal for each user varies. Sometimes, people go on YouTube with a specific purpose. Sometimes, people watch YouTube to pass the time. Sometimes, people hope to learn something or find a video to show other people. The goals of users are very broad since the users have different interests and purposes.
+
+### Accomplish User Goals
+
+The recommender system will show users options similar to previous videos they have watched. This makes it easier for users to find videos they will probably enjoy watching. The recommender system also shows users options for videos that match the interests of users similar to them. This gives the users options for videos that they might not have chosen for themselves but end up being videos that they do like. The recommender system provides all users with options to keep them entertained and educated, depending on their goals.
+
+The recommender system also determines what the search results show for different users. The same search by different users might yield different results based on their history. For example, searching "movie trailer" might show movie trailers for one genre for person A while searching "movie trailer" might show movie trailers for another genre for person B.
+
+### Organization's Focus on Users
+
+YouTube focuses on groups of users that make up the largest portions of users. About 77% of users in the U.S. are between the ages of 15 and 25, so this is one group that YouTube focuses on. YouTube earns money from advertisements and subscriptions, so the more often people use YouTube, the more money they earn.
+
+### Key Goals of the Organization
+
+YouTube's goals include making money, building a global community, and give people a voice. To make money, they rely on users watching videos and advertisers paying to show users their advertisements. They are building a global community and giving people a voice by allowing them to post videos, comment on videos, and speak their mind online. The recommender system helps connect people with the same interests by showing them similar videos, and it increases the money YouTube earns because people will stay watching videos on YouTube longer when they are given videos that interest them.
+
+### Accomplish Organization Goals
+
+YouTube wants to make money while giving users what they want. They do this by using advertisements on videos that many people watch. Their goals are accomplished better by using the recommender system because people will stay on YouTube longer with good recommendations for videos on their list to watch. This, in turn, earns them more money since more advertisers are needed to fill up time. YouTube gives people what they want by recommending shows and clips that the users would likely enjoy viewing. Thus, the recommender system accomplishes the goals of both the users and the organization.
+
+## Reverse Engineering the Site
+
+The algorithm ranks videos based on their performance data analytics. Then, it determines which videos best match the user's history. Starting in 2016, it was found that YouTube used machine learning and deep neural networks for the recommendation system. YouTube is not very forthcoming with their recommendation system's process, but these are the basics that are described on YouTube's website as well as others that analyzed the algorithm.
+
+## Recommendations for Improvement
+
+One way YouTube could improve its recommender system is by asking people why they like certain videos or why they watched one over another. This would add another component to the algorithm. It could be a simple multiple-choice question at the end of each video. Many people might not click a button in response, but some would. This could improve the system because it would differentiate between videos the person really likes and videos the person just watched because they were required to for school.
+
+Another way YouTube could improve its recommender system is take into account the time of day or season. Some people might be more interested in certain types of videos certain times of the day or year. For example, people might watch certain sports videos when that sport is in season, and people might watch calming videos in the evening before going to sleep. This time variable could be used to improve the algorithm. This might be something that YouTube already uses in its algorithm. However, since the website did not make any specification about this, I assumed it was not included in the algorithm.
+
+## Sources
+
+https://towardsdatascience.com/breaking-down-youtubes-recommendation-algorithm-94aa3aa066c6
+
+https://blog.youtube/inside-youtube/on-youtubes-recommendation-system/
+
+https://www.youtube.com/howyoutubeworks/product-features/recommendations/
+
+https://www.miquido.com/blog/perks-of-recommendation-systems-in-business/
+
+https://www.infoq.com/news/2016/09/How-YouTube-Recommendation-Works/
+
+https://www.comparably.com/companies/youtube/mission
+
+https://influencermarketinghub.com/youtube-stats/#toc-1
+
+https://quickframe.com/blog/the-youtube-algorithm/
+
+https://www.socialpilot.co/youtube-marketing/youtube-algorithm
