@@ -1,0 +1,377 @@
+---
+title: "Spam Filter"
+author: "Julia Ferris"
+date: "2023-11-15"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+In this assignment, spam emails and non-spam (ham) emails are used to create a model that will determine if other emails are spam or not. To do this, hundreds of emails already characterized as spam or ham were labelled. A portion of the data frame was used as a training set, and the other portion was used as a testing set. The training data was used to make the model. The testing data was used to test the accuracy of the model.
+
+## Load libraries
+
+```{r libraries}
+library(tidyr)
+library(tibble)
+library(dplyr)
+library(quanteda)
+library(quanteda.textmodels)
+library(caret)
+library(readr)
+library(caTools)
+library(randomForest)
+library(imputeTS)
+library(rpart)
+library(purrr)
+library(rpart.plot)
+library(ROCR)
+```
+
+
+## First Attempt: Import the spam and non-spam files
+
+When replicating this data, download the files found here:
+
+https://spamassassin.apache.org/old/publiccorpus/20021010_easy_ham.tar.bz2
+https://spamassassin.apache.org/old/publiccorpus/20021010_spam.tar.bz2
+
+The files were too large to upload to Git Hub and use directly from this Rmd file.
+
+Each step is explained in the comments of the R chunk. In the data frames, each column has each line of the emails.
+
+```{r import-files}
+# List all the files needed
+not_spam_files <- list.files("spamham/easy_ham")
+#not_spam_files <- not_spam_files[95]
+spam_files <- list.files("spamham/spam")
+
+
+# This is a for loop to get the words of all the ham files
+# First, it gets the words from each file
+# Each column is one file with all its words
+# Each row shows a different line of each email
+num <- 1
+nonSpamEmails <- as.data.frame(col1 <- c(1:3100))
+for (file in not_spam_files)
+{
+  del1 <- read.delim(paste0("spamham/easy_ham/", file), row.names = NULL)
+  names(del1)[1] <- "one"
+  
+  if (ncol(del1) > 1)
+  {
+    names(del1)[2] <- "two"
+    filename <- paste0("file", num)
+    del1 <- unite(del1, filename, c(one, two))
+  }
+  else
+  {
+    names(del1)[1] <- "filename"
+  }
+  
+  
+  diffNum <- 3100 - nrow(del1)
+  del2 <- data.frame(filename = c(rep(NA, diffNum)))
+  del3 <- rbind(del1, del2)
+  nonSpamEmails <- cbind(nonSpamEmails, del3)
+  colnames(nonSpamEmails)[ncol(nonSpamEmails)] <- paste0("file", num)
+  
+  num <- num + 1
+}
+
+nonSpamEmails <- nonSpamEmails[,-1]
+
+# This is a for loop to get the words of all the spam files
+# First, it gets the words from each file
+# Each column is one file with all its words
+# Each row shows a different line of each email
+num <- 1
+spamEmails <- as.data.frame(col1 <- c(1:3100))
+for (file in spam_files)
+{
+  del1 <- read.delim(paste0("spamham/spam/", file), row.names = NULL)
+  names(del1)[1] <- "one"
+  
+  if (ncol(del1) > 1)
+  {
+    names(del1)[2] <- "two"
+    filename <- paste0("file", num)
+    del1 <- unite(del1, filename, c(one, two))
+  }
+  else
+  {
+    names(del1)[1] <- "filename"
+  }
+  
+  
+  diffNum <- 3100 - nrow(del1)
+  del2 <- data.frame(filename = c(rep(NA, diffNum)))
+  del3 <- rbind(del1, del2)
+  spamEmails <- cbind(spamEmails, del3)
+  colnames(spamEmails)[ncol(spamEmails)] <- paste0("file", num)
+  
+  num <- num + 1
+}
+
+spamEmails <- spamEmails[,-1]
+
+```
+
+
+## Split into train and test data 
+
+The training data uses 75% of the spam and 75% of the ham emails. The testing data uses 25% of the spam and 25% of the ham emails. The column named spam is changed to 1 for spam and 0 for ham.
+
+```{r split}
+
+
+train <- c(spamEmails[,1:375], nonSpamEmails[,1:1913]) # This is the first 75% of the data
+test <- c(spamEmails[,376:500], nonSpamEmails[,1913:2551]) # This is the last 25% of the data
+
+train <- dfm(as.character(train))
+test <- dfm(as.character(test))
+
+trainClass <- c(rep(1, 375), rep(0, 1913))
+testClass <- c(rep(1, 125), rep(0, 639))
+
+```
+
+## Testing a model
+
+This model did not work, so this model is fully commented. I included this model and others to show what failed.
+
+The model did not work because the predictions did not make sense. They were between 1 and 2 instead of 0 and 1, so it is unclear what the predictions were showing.
+
+``` {r failed-model}
+
+model3 <- textmodel_wordscores(train, as.numeric(factor(trainClass)))
+# Yes = 2
+# No = 1
+predictions <- predict(model3, newdata = test)
+summary(predictions)
+```
+
+## Second Attempt: Import the spam and non-spam files
+
+This section formats the data differently because the data needed to be in a different format for the models I wanted to try. In this new format, each column is a word that appears in at least one of the emails, and each row is a file. The cells that line up with a word and file show the count of that word in that file.
+
+```{r for-real-models}
+# Get lists of all files needed
+not_spam_files <- list.files("spamham/easy_ham")
+spam_files <- list.files("spamham/spam")
+
+notSpamFrequencies <- as.data.frame(c())
+spamFrequencies <- as.data.frame(c())
+
+# For loop to count each word in each email (non-spam)
+for (file in not_spam_files)
+{
+  lines <- readLines(paste0("spamham/easy_ham/", file))
+  lines2 <- paste(lines , collapse =" ")
+  lines2 <- iconv(lines2, from = "ISO-8859-1", to = "UTF-8")
+  words <- as.data.frame(strsplit(lines2, " "))
+  
+  words[words == ''] <- NA
+  words[words == '...'] <- NA
+  words <-
+    words |> 
+    na.omit()
+  
+  colnames(words)[1] = "one"
+    
+    # Count each word
+  num <- 1
+  for (myWord in words$one)
+  {
+    total <- 
+      words |> 
+      filter(one == myWord) |> 
+      count() |> 
+      as.integer()
+    words$count[num] <- total
+    num <- num + 1
+  }
+  
+  words <- distinct(words)
+  
+  testing <- words |> pivot_wider(names_from = "one", values_from = "count")
+  
+  notSpamFrequencies <- bind_rows(notSpamFrequencies, testing) 
+}
+
+# For loop to count each word in each email (spam)
+for (file in spam_files)
+{
+  lines <- readLines(paste0("spamham/spam/", file))
+  lines2 <- paste(lines , collapse =" ")
+  lines2 <- iconv(lines2, from = "ISO-8859-1", to = "UTF-8")
+  words <- as.data.frame(strsplit(lines2, " "))
+  
+  words[words == ''] <- NA
+  words[words == '...'] <- NA
+  words <-
+    words |> 
+    na.omit()
+  
+  colnames(words)[1] = "one"
+    
+    # Count each word
+  num <- 1
+  for (myWord in words$one)
+  {
+    total <- 
+      words |> 
+      filter(one == myWord) |> 
+      count() |> 
+      as.integer()
+    words$count[num] <- total
+    num <- num + 1
+  }
+  
+  words <- distinct(words)
+  
+  testing <- words |> pivot_wider(names_from = "one", values_from = "count")
+  
+  spamFrequencies <- bind_rows(spamFrequencies, testing)
+}
+
+
+
+
+  
+```
+
+
+
+## Testing New Models
+
+In this section, I showed the model that worked the best. None of the others worked. The accuracy was still very low at around 58%. However, the other models either did not work because of space limits or they resulted in horrible accuracy (less than 1%  accuracy). Those are in the last section.
+
+Disclaimer: This section takes a long time to run, but it does finish eventually. Be patient, and it will work at some point.
+
+```{r best-model}
+# In this section, we want to create a model for new emails
+
+# Add spam to the end
+notSpamFrequencies$spam <- c(rep(0, nrow(notSpamFrequencies)))
+spamFrequencies$spam <- c(rep(1, nrow(spamFrequencies)))
+
+allFrequencies <- bind_rows(notSpamFrequencies, spamFrequencies)
+
+allFrequencies$spam <- as.factor(allFrequencies$spam)
+
+set.seed(1234)
+
+spl = sample.split(allFrequencies$spam, 0.7)
+
+train <- subset(allFrequencies, spl == TRUE)
+test <- subset(allFrequencies, spl == FALSE)
+
+
+
+eqnames <- names(train)[names(train) %in% names(test)]
+train2 <- train[eqnames]
+test2 <- test[eqnames]
+  
+train <- na_replace(train, 0)
+train2 <- subset(train, select = -c(spam))
+rf_classifier <- randomForest(x = train2[1500:2000,],
+                          y = train$spam[1500:2000],
+                          ntree = 100)
+
+rf_classifier
+
+test <- na_replace(test, 0)
+
+
+test2 <- subset(test, select = -c(spam))
+
+rf_pred <- predict(rf_classifier, newdata = test2[380:880,])
+
+confusionMatrix(table(rf_pred,test$spam[380:880]))
+
+```
+
+### Section 3:
+
+In this section, I show the code for other methods I tried. These methods did not work for a few reasons. Mainly, the data frames were too large with too many rows and columns for proper analysis. R Studio could not handle the amount of data involved. I commented out all the sections, but you can uncomment them to test if you would like to see.
+
+```{r failed-models}
+#spamCART <- rpart(spam~., data=train, method="class")
+
+
+#train |> 
+#    keep(~ isTRUE(any((. >= 50)((spam == 1) | (spam == 0)))))
+#train |> keep(~ (isTRUE(any(. >= 50) & train$spam < 2)))
+
+#train |> keep(c(~ isTRUE(any(c((. <= 2), (. >= 50))))), spam)
+
+#smallTrain <- train |>
+#  keep(~ isTRUE(any(. >= 50)))
+#spamTrain <- train$spam
+
+#over50 <- merge(spamTrain, smallTrain, 'row.names')
+#over50 <- na.omit(over50)
+
+
+#over50spamCART <- rpart(x~., data=over50, method="class")
+#prp(over50spamCART)
+#predTrainCART = predict(over50spamCART)[,2]
+#predictionTrainCART = prediction(as.numeric(predTrainCART), over50$spam)
+
+#as.numeric(performance(predictionTrainCART, "auc")@y.values)
+
+#over50spamRF <- randomForest(x~., data=over50, na.action=na.omit)
+
+
+#over50 <- over50[,-1]
+#over50$x <- as.numeric(over50$x)
+#spamLog = glm(x~., data=over50, family="binomial", na.action = na.omit)
+#predTrainLog = predict(spamLog, type="response")
+```
+
+
+## Sources:
+
+I used all these sources. Some of them I just glanced at. Some of them I used to create the models. The first two websites helped a lot.
+
+https://rpubs.com/anilcs13m/126170
+https://rpubs.com/Seun/455974
+https://kharshit.github.io/blog/2017/08/25/email-spam-filtering-text-analysis-in-r
+http://www.sthda.com/english/wiki/reading-data-from-txt-csv-files-r-base-functions
+http://thinkagile.net/easily-import-multiple-files-into-r/
+https://stackoverflow.com/questions/8854046/duplicate-row-names-are-not-allowed-error
+https://www.statology.org/r-combine-two-columns-into-one/
+https://www.r-bloggers.com/2023/08/a-handy-guide-to-read-delim-in-r-unraveling-the-magic-of-reading-tabular-data/
+https://www.datanovia.com/en/lessons/rename-data-frame-columns-in-r/
+https://sparkbyexamples.com/r-programming/add-empty-column-to-dataframe-in-r/
+https://cmdlinetips.com/2021/03/tips-to-add-columns-to-a-dataframe-with-add_column/
+https://stackoverflow.com/questions/21781596/refer-to-the-last-column-in-r
+https://github.com/r-lib/rlang/issues/1300
+https://stackoverflow.com/questions/40399229/cbind-2-dataframes-with-different-number-of-rows
+https://www.r-bloggers.com/2022/07/how-to-use-mutate-function-in-r/
+https://www.geeksforgeeks.org/insert-multiple-rows-in-r-dataframe/
+https://quanteda.io/reference/textmodel_nb.html
+https://www.rdocumentation.org/packages/quanteda/versions/1.5.0/topics/dfm
+https://stackoverflow.com/questions/15375483/r-put-all-elements-of-a-vector-into-one-element-without-paste
+https://stackoverflow.com/questions/6437164/removing-empty-rows-of-a-data-file-in-r
+https://kharshit.github.io/blog/2017/08/25/email-spam-filtering-text-analysis-in-r
+https://tidyr.tidyverse.org/reference/pivot_wider.html
+https://www.storybench.org/pivoting-data-from-columns-to-rows-and-back-in-the-tidyverse/
+https://www.statology.org/pivot_wider-r/
+https://dplyr.tidyverse.org/reference/distinct.html
+https://stackoverflow.com/questions/3402371/combine-two-data-frames-by-rows-rbind-when-they-have-different-sets-of-columns
+https://www.r-bloggers.com/2022/09/error-in-rbinddeparse-level-numbers-of-columns-of-arguments-do-not-match-2/#google_vignette
+https://stackoverflow.com/questions/76680882/unable-to-translate-to-a-wide-string
+https://www.rdocumentation.org/packages/randomForest/versions/4.7-1.1/topics/randomForest
+https://sparkbyexamples.com/r-programming/replace-na-values-with-zero-in-r-dataframe/
+https://stackoverflow.com/questions/31385886/how-to-only-keep-the-columns-with-same-names-between-two-data-frames
+https://www.listendata.com/2015/06/r-keep-drop-columns-from-data-frame.html
+
+
